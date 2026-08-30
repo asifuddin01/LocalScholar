@@ -55,17 +55,15 @@ brew install ollama && ollama serve
 ollama pull qwen2.5:3b-instruct
 ```
 
-Then start the two processes in separate terminals:
+Then start both processes:
 
 ```bash
-.venv/bin/python -m uvicorn backend.main:app --port 8000
+./scripts/dev.sh
 ```
 
-```bash
-npm --prefix frontend run dev
-```
-
-Open <http://localhost:5173> and drop in some PDFs.
+Open <http://localhost:5173> and drop in some PDFs. (Or run them separately:
+`.venv/bin/python -m uvicorn backend.main:app --port 8000` and
+`npm --prefix frontend run dev`.)
 
 The embedding and reranking models (~150MB total) download from Hugging Face on first use and
 are cached in `data/models`. After that the whole system runs with no network access.
@@ -166,6 +164,31 @@ Measured, not estimated. Two things in that table are worth reading carefully:
 
 Two questions are missed by every method (`d5`, `e6`), which is a fair result rather than a
 tuning failure: both ask about a concept the paper expresses in wording no retriever matches.
+
+### Refusing to answer
+
+The benchmark also carries four questions the library provably cannot answer — a dataset no
+paper uses, a cost never discussed, a physics fact, and a task outside the corpus.
+
+**4 / 4 correctly refused.** The system replies "I could not find sufficient evidence in the
+uploaded papers" rather than producing a fluent answer from the model's own memory. This is
+the property that decides whether the tool is usable for real literature review: a tool that
+quietly answers from pretraining when the paper is silent is worse than no tool, because you
+cannot tell the two cases apart.
+
+### Answer quality
+
+Answers were checked by reading them against the pages they cite. Representative results:
+
+| Question | Answer | Cited |
+|---|---|---|
+| How many fruit images, and how were they split? | "13,599 fruit images... 10,901 training and 2,698 testing" | p2, *A. Dataset Description* ✓ |
+| What optimizer and learning rate were used? | "AdamW... 5e-5" | p13, *6 Results and Discussion* ✓ |
+| What are the limitations acknowledged? | the paper's own limitation paragraph | p4, *F. Limitation* ✓ |
+
+Faithfulness was verified by hand rather than by an LLM judge — with a four-paper corpus, a
+judge would have added a second source of error without adding trustworthy signal. That is a
+gap, and it is listed as one below.
 
 ## Measurements that changed the design
 
