@@ -82,16 +82,76 @@ ALL_FIELDS: tuple[tuple[str, str], ...] = (("title", "Title"),) + tuple(
 SYSTEM_PROMPT = f"""You extract structured facts from scientific papers.
 
 You will be given numbered excerpts from ONE paper and a list of fields.
-Reply with a single JSON object and nothing else.
+Reply with a single JSON object mapping each field name to a short string.
 
 Rules:
 - Use ONLY the excerpts. Never use outside knowledge.
-- Every value must be an object: {{"value": "...", "citations": [1, 2]}}
-- Citations are the numbers of the excerpts that support the value.
-- If the excerpts do not state a field, use {{"value": "{NOT_REPORTED}", "citations": []}}.
+- If the excerpts do not state a field, use exactly "{NOT_REPORTED}".
   Do not guess, and do not infer a plausible value.
-- Keep values short and factual. Quote numbers exactly as written.
+- Keep values short and factual. Copy numbers, dataset names and metric values
+  exactly as they appear in the excerpts.
 - No markdown, no commentary, no code fences."""
+
+# Deliberately NOT asked for: citations.
+#
+# The first version of this prompt required {"value": ..., "citations": [...]}
+# per field. A 3B model ignores that shape and returns plain strings, so every
+# field arrived with no citations and was discarded by the grounding rule --
+# even though the evidence was sitting in the excerpts.
+#
+# Asking the model to cite itself was the wrong design anyway. A citation the
+# model reports is a claim about its own reasoning; a citation computed by
+# matching the extracted value back against the excerpt text is a check on the
+# output. The second one is what a reader actually wants, and it catches
+# fabrication rather than trusting the fabricator's word for it.
+
+_STOPWORDS = {
+    "the", "and", "for", "with", "was", "were", "are", "this", "that", "from",
+    "using", "used", "use", "not", "reported", "which", "their", "they", "has",
+    "have", "had", "its", "our", "all", "can", "such", "these", "those", "into",
+    "than", "then", "also", "based", "each", "per", "via", "over", "more",
+}
+
+# Fraction of a value's distinctive tokens that must appear in one excerpt for
+# that excerpt to count as supporting it. Tuned on the four-paper corpus: high
+# enough to reject an unrelated passage, low enough to tolerate the model
+# rewording ("achieved a score of X" for "score: X").
+SUPPORT_THRESHOLD = 0.55
+MAX_CITATIONS = 2
+
+
+def _content_tokens(text: str) -> set[str]:
+    """Distinctive tokens, with digit grouping normalised.
+
+    "13,599" and "13599" must match, so commas are stripped from both sides
+    before tokenising -- otherwise the single most citable kind of fact in a
+    paper, an exact sample count, would never match its own source.
+    """
+    normalised = text.lower().replace(",", "")
+    return {
+        token.strip(".")
+        for token in re.findall(r"[a-z0-9.]+", normalised)
+        if len(token.strip(".")) >= 3 and token.strip(".") not in _STOPWORDS
+    }
+
+
+def find_supporting_sources(value: str, sources: list[Source]) -> list[int]:
+    """Which excerpts actually contain this value. Empty means unsupported."""
+    tokens = _content_tokens(value)
+    if not tokens:
+        return []
+    # A single-token value ("AdamW", "BCEWithLogitsLoss") is perfectly valid and
+    # highly citable; requiring two tokens rejected exactly the short, exact
+    # answers this tool exists to find.
+
+    scored: list[tuple[float, int]] = []
+    for source in sources:
+        overlap = len(tokens & _content_tokens(source.text)) / len(tokens)
+        if overlap >= SUPPORT_THRESHOLD:
+            scored.append((overlap, source.index))
+
+    scored.sort(reverse=True)
+    return [index for _, index in scored[:MAX_CITATIONS]]
 
 
 @dataclass
@@ -229,7 +289,9 @@ class ExtractionService:
         )
 
         try:
-            payload = parse_json_object(self.llm.complete(SYSTEM_PROMPT, prompt))
+            payload = parse_json_object(
+                self.llm.complete(SYSTEM_PROMPT, prompt, json_mode=True)
+            )
         except (LLMError, ValueError, json.JSONDecodeError) as exc:
             # One bad group must not lose the other two. The fields come back
             # as "Not reported", which is both true and visibly distinguishable
@@ -237,23 +299,26 @@ class ExtractionService:
             logger.warning("Extraction failed for group %r: %s", query[:40], exc)
             return blank
 
-        valid_indexes = {s.index for s in sources}
         extracted: list[ExtractedField] = []
         for name, label in fields:
             if name not in payload:
                 extracted.append(ExtractedField(name=name, label=label, value=NOT_REPORTED))
                 continue
-            value, citations = _coerce(payload[name])
-            # Same rule as question answering: a citation that does not point at
-            # a retrieved excerpt is dropped, not shown.
-            citations = [c for c in citations if c in valid_indexes]
 
-            # And the rule that matters most: a value with no surviving citation
-            # is not evidence-backed, so it is not reported. This is how the
-            # hallucinated author/year values get caught -- the model produced
-            # them confidently but could not point at a single excerpt, because
-            # no excerpt said it.
+            value, _ = _coerce(payload[name])
+            if value.strip().lower() == NOT_REPORTED.lower():
+                extracted.append(ExtractedField(name=name, label=label, value=NOT_REPORTED))
+                continue
+
+            # Citations are computed, not taken on trust: an excerpt only counts
+            # if it actually contains the value the model produced.
+            citations = find_supporting_sources(value, sources)
+
+            # A value no excerpt supports did not come from the paper. That is
+            # how the invented title and authors were caught, and it is the
+            # whole reason this tool can be trusted for literature review.
             if not citations:
+                logger.info("Dropping unsupported value for %r: %r", name, value[:60])
                 value = NOT_REPORTED
 
             extracted.append(

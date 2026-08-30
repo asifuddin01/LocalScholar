@@ -210,13 +210,32 @@ Refusing to fabricate is a property of the pipeline, not a line in the prompt:
 Point 4 earns its keep. Asked to extract paper metadata, the 3B model confidently produced the
 title *"Privacy-Preserving Ordinal-Meta Learning for Food Freshness"* by *"Kumar et al. (2025)"*
 for a paper actually called *"Leveraging CNN and Random Forest for Accurate Food Expiry
-Prediction"* — and cited nothing, because nothing in the paper said it. The no-citation rule
-caught all three fabricated fields automatically. (The title is now taken from the parser,
-which read it off page one: never ask a model for something you already know.)
+Prediction"*. It cited nothing, because nothing in the paper said it, and the rule caught all
+three fabricated fields automatically. The title is now read off page one by the parser
+instead: never ask a model for something you already know.
 
-Fields the papers genuinely don't state come back as **"Not reported"** rather than a
-plausible guess. A comparison table with every cell filled in is a table that has been
-guessed at.
+### Citations are computed, not self-reported
+
+For structured extraction the rule goes further, and this was the most useful thing the build
+taught me.
+
+The first design asked the model to return `{"value": ..., "citations": [1, 2]}` per field. A
+3B model ignores that shape and returns plain strings, so every field arrived with an empty
+citation list and got discarded — the extraction table came back almost empty even though the
+evidence was sitting in the retrieved excerpts. The obvious fix was to nag the prompt harder.
+
+The better fix was to stop asking. **A citation the model reports is a claim about its own
+reasoning; a citation computed by matching the extracted value back against the excerpt text
+is a check on the output.** So the model now returns bare values, and each one is verified by
+token overlap against the passages it was given. A value no passage supports is not reported,
+whatever the model asserted.
+
+That single change took extraction from 6/15 fields to 12/15 on one paper and 4/15 to 10/15 on
+another, while making every remaining value *more* trustworthy rather than less — because now
+the citation is evidence rather than testimony.
+
+Fields the papers genuinely don't state come back as **"Not reported"**. A comparison table
+with every cell filled in is a table that has been guessed at.
 
 ## The parser
 
@@ -279,7 +298,7 @@ one promise this project makes.
 | Retrieval + reranking | ~2.5 s |
 | Answer generation (model warm) | ~2.2 s |
 | First question after startup | ~30 s (model load) |
-| Structured extraction, one paper | ~55 s (cached afterwards) |
+| Structured extraction, one paper | ~27–50 s (cached afterwards) |
 
 The model is warmed at startup and held resident via `keep_alive`, because a cold call costs
 ~32s of loading against ~2.2s warm for identical work.
@@ -287,7 +306,7 @@ The model is warmed at startup and held resident via `keep_alive`, because a col
 ## Tests
 
 ```bash
-.venv/bin/python -m pytest tests/ -q        # 70 tests, ~2s
+.venv/bin/python -m pytest tests/ -q        # 74 tests, ~5s
 .venv/bin/python -m pytest tests/ -m slow   # + real embedding model
 ```
 
@@ -295,6 +314,10 @@ Covers PDF parsing, page/section preservation, column ordering, heading classifi
 the real false positives that motivated each rule, chunking invariants, BM25 and vector
 search, citation validation, and the API surface. The slow tests exercise the real model,
 including the 490-chunk background-thread indexing regression test.
+
+Citation handling has its own tests, because it is the feature most worth protecting:
+invented citations are stripped, an answer left with none is rejected, and extracted values
+are only cited when the source text actually contains them.
 
 Test PDFs are generated in memory, so the layout under test is readable in the test file
 rather than hidden in a committed binary.
@@ -340,7 +363,7 @@ backend/
 frontend/      React + Vite
 evaluation/    benchmark.json, retrieval_eval.py
 scripts/       benchmark_embeddings.py
-tests/         70 tests
+tests/         74 tests
 ```
 
 ## License

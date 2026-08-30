@@ -153,3 +153,47 @@ def test_symmetric_models_get_no_prefix():
     from backend.retrieval.embeddings import query_prefix_for
 
     assert query_prefix_for("sentence-transformers/all-MiniLM-L6-v2") == ""
+
+
+# --- citation handling ------------------------------------------------------
+
+def test_invented_citations_are_stripped():
+    """A [7] the model made up must never reach the user."""
+    from backend.generation.answering import extract_citations
+
+    cleaned, cited = extract_citations("Used KiTS19 [1]. It had 300 scans [7].", {1, 2})
+    assert "[7]" not in cleaned
+    assert cited == [1]
+
+
+def test_answer_with_only_invented_citations_has_none_left():
+    from backend.generation.answering import extract_citations
+
+    _, cited = extract_citations("Everything came from [8] and [9].", {1, 2})
+    assert cited == []
+
+
+def test_leading_citation_is_stripped_only_before_a_new_sentence():
+    """"[1] and [2] indicate..." must not become "and [2] indicate..."."""
+    from backend.generation.answering import extract_citations
+
+    assert extract_citations("[1] The optimizer was AdamW [1].", {1})[0].startswith("The")
+    assert extract_citations("[1] and [2] agree [1].", {1, 2})[0].startswith("[1] and")
+
+
+def test_extracted_values_are_verified_against_their_sources():
+    """Citations are computed from the text, not taken from the model."""
+    from backend.generation.answering import Source
+    from backend.generation.extraction import find_supporting_sources
+
+    def source(index, text):
+        return Source(index, "c", "d", "f.pdf", None, 1, None, text, 1.0)
+
+    sources = [
+        source(1, "The dataset includes 13,599 fruit images (10,901 for training)."),
+        source(2, "Optimizer AdamW, Learning Rate: 5e-5."),
+    ]
+    assert find_supporting_sources("13,599 fruit images", sources) == [1]
+    assert find_supporting_sources("AdamW", sources) == [2]
+    # The failure mode this exists to catch.
+    assert find_supporting_sources("A quantum blockchain for cats", sources) == []

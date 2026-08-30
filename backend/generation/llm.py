@@ -30,7 +30,10 @@ class LLMProvider(ABC):
     def model(self) -> str: ...
 
     @abstractmethod
-    def complete(self, system: str, user: str, *, temperature: float | None = None) -> str: ...
+    def complete(
+        self, system: str, user: str, *,
+        temperature: float | None = None, json_mode: bool = False,
+    ) -> str: ...
 
     @abstractmethod
     def available(self) -> tuple[bool, str]: ...
@@ -83,8 +86,11 @@ class OllamaProvider(LLMProvider):
             )
         return True, "ok"
 
-    def _payload(self, system: str, user: str, temperature: float | None, stream: bool) -> dict:
-        return {
+    def _payload(
+        self, system: str, user: str, temperature: float | None, stream: bool,
+        json_mode: bool = False,
+    ) -> dict:
+        payload = {
             "model": self._model,
             "messages": [
                 {"role": "system", "content": system},
@@ -101,6 +107,14 @@ class OllamaProvider(LLMProvider):
                 "num_ctx": self.num_ctx,
             },
         }
+        if json_mode:
+            # Constrained decoding, so the model *cannot* emit invalid JSON.
+            # Without it, a 3B model produced unparseable output for two of the
+            # three extraction groups, and the whole group fell back to
+            # "Not reported" even though the evidence was sitting in the
+            # retrieved excerpts.
+            payload["format"] = "json"
+        return payload
 
     def warm_up(self) -> None:
         """Load the model into memory so the first real question is not slow.
@@ -125,11 +139,14 @@ class OllamaProvider(LLMProvider):
         except Exception as exc:  # noqa: BLE001
             logger.info("Model warm-up skipped (%s)", exc)
 
-    def complete(self, system: str, user: str, *, temperature: float | None = None) -> str:
+    def complete(
+        self, system: str, user: str, *,
+        temperature: float | None = None, json_mode: bool = False,
+    ) -> str:
         try:
             response = httpx.post(
                 f"{self.host}/api/chat",
-                json=self._payload(system, user, temperature, stream=False),
+                json=self._payload(system, user, temperature, stream=False, json_mode=json_mode),
                 timeout=self.timeout_seconds,
             )
             response.raise_for_status()
@@ -189,7 +206,10 @@ class OpenAICompatibleProvider(LLMProvider):
     def available(self) -> tuple[bool, str]:
         return True, "ok"
 
-    def complete(self, system: str, user: str, *, temperature: float | None = None) -> str:
+    def complete(
+        self, system: str, user: str, *,
+        temperature: float | None = None, json_mode: bool = False,
+    ) -> str:
         headers = {"Authorization": f"Bearer {self.api_key}"} if self.api_key else {}
         try:
             response = httpx.post(
@@ -202,6 +222,7 @@ class OpenAICompatibleProvider(LLMProvider):
                         {"role": "user", "content": user},
                     ],
                     "temperature": self.temperature if temperature is None else temperature,
+                    **({"response_format": {"type": "json_object"}} if json_mode else {}),
                 },
                 timeout=self.timeout_seconds,
             )

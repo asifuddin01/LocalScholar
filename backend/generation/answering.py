@@ -141,9 +141,12 @@ def extract_citations(text: str, valid: set[int]) -> tuple[str, list[int]]:
 
     cleaned = re.sub(r"[ \t]{2,}", " ", cleaned)
     cleaned = re.sub(r"\s+([.,;:])", r"\1", cleaned)
-    # Small models sometimes open with the citation ("[1] The optimizer was...").
-    # It reads as a footnote marker for a sentence that has not happened yet.
-    cleaned = re.sub(r"^\s*(?:\[\d{1,2}\]\s*)+", "", cleaned)
+    # Small models sometimes open with a stray citation ("[1] The optimizer
+    # was..."), which reads as a footnote marker for a sentence that has not
+    # happened yet. Only strip it when a new sentence clearly follows: models
+    # also legitimately open with "[1] and [2] indicate that...", and blindly
+    # removing the leading marker there produced "and [2] indicate that...".
+    cleaned = re.sub(r"^\s*(?:\[\d{1,2}\]\s*)+(?=[A-Z])", "", cleaned)
     return cleaned.strip(), cited
 
 
