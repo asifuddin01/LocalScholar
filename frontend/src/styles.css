@@ -1,0 +1,115 @@
+:root {
+  --bg: #0f1115;
+  --panel: #171a21;
+  --panel-2: #1e222b;
+  --border: #2a2f3a;
+  --text: #e6e8ee;
+  --muted: #9aa3b2;
+  --accent: #6ea8fe;
+  --ok: #4ade80;
+  --warn: #fbbf24;
+  --err: #f87171;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.app { max-width: 900px; margin: 0 auto; padding: 32px 20px 80px; }
+
+.app__header h1 { margin: 0; font-size: 26px; letter-spacing: -0.02em; }
+.app__header p { margin: 6px 0 26px; color: var(--muted); font-size: 14px; }
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-bottom: 18px;
+}
+.panel h2 { margin: 0 0 14px; font-size: 15px; font-weight: 600; }
+.count {
+  color: var(--muted); font-weight: 400; font-size: 13px; margin-left: 6px;
+}
+
+.dropzone {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 30px; text-align: center; cursor: pointer;
+  border: 1.5px dashed var(--border); border-radius: 10px;
+  background: var(--panel-2); transition: border-color .15s, background .15s;
+}
+.dropzone:hover, .dropzone--active { border-color: var(--accent); background: #1b2331; }
+.dropzone--busy { opacity: .6; pointer-events: none; }
+.dropzone span { color: var(--muted); font-size: 13px; }
+
+.empty { color: var(--muted); font-size: 14px; margin: 4px 0; }
+
+.paper-list { list-style: none; margin: 0; padding: 0; }
+.paper {
+  position: relative; padding: 12px 40px 12px 14px; border-radius: 9px;
+  border: 1px solid var(--border); background: var(--panel-2); margin-bottom: 8px;
+  cursor: pointer;
+}
+.paper--selected { border-color: var(--accent); }
+.paper__main { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.paper__title { font-weight: 600; }
+.paper__file, .paper__meta { color: var(--muted); font-size: 12.5px; }
+.paper__meta { margin-top: 4px; }
+.paper__error { color: var(--err); font-size: 12.5px; margin-top: 4px; }
+
+.paper__delete {
+  position: absolute; top: 10px; right: 10px; width: 24px; height: 24px;
+  border: none; border-radius: 6px; background: transparent; color: var(--muted);
+  font-size: 17px; line-height: 1; cursor: pointer;
+}
+.paper__delete:hover { background: #2b313d; color: var(--text); }
+
+.badge {
+  font-size: 11px; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--border); color: var(--muted);
+}
+.badge--ready { color: var(--ok); border-color: #24603c; }
+.badge--processing { color: var(--warn); border-color: #5c4416; }
+.badge--failed { color: var(--err); border-color: #6b2b2b; }
+
+.notice {
+  font-size: 13px; padding: 9px 12px; border-radius: 8px; margin-top: 10px;
+  border: 1px solid var(--border);
+}
+.notice--error { color: var(--err); border-color: #6b2b2b; background: #2a1b1b; }
+.notice--info { color: var(--muted); background: var(--panel-2); }
+
+.viewer {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px 20px;
+}
+.viewer__header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.viewer__header h2 { margin: 0; font-size: 17px; }
+.viewer__sub { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+.viewer__sections { margin: 16px 0; }
+.viewer__sections h3 { font-size: 13px; margin: 0 0 8px; color: var(--muted); font-weight: 600; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  font-size: 12px; padding: 3px 9px; border-radius: 6px;
+  background: var(--panel-2); border: 1px solid var(--border); color: var(--muted);
+}
+
+.ghost {
+  background: transparent; border: 1px solid var(--border); color: var(--muted);
+  border-radius: 7px; padding: 5px 12px; cursor: pointer; font-size: 13px;
+}
+.ghost:hover { color: var(--text); border-color: var(--accent); }
+
+.page { border-top: 1px solid var(--border); padding-top: 14px; margin-top: 14px; }
+.page h4 { margin: 0 0 8px; font-size: 12px; color: var(--muted); font-weight: 600; }
+.page pre {
+  margin: 0; white-space: pre-wrap; word-break: break-word;
+  font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; color: #cfd4de;
+}

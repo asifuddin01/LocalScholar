@@ -1,0 +1,14 @@
+# LocalScholar configuration.
+#
+# This file grows with the project. Only settings the code actually reads are
+# listed here -- a config key with no reader is a lie about what's tunable.
+
+storage:
+  # Where uploaded PDFs, the SQLite catalogue, and (later) the vector index live.
+  # Relative paths resolve against the repository root.
+  data_dir: ./data
+
+ingestion:
+  # Reject uploads larger than this. Research papers are rarely >30MB; anything
+  # much bigger is usually a scanned book, which we can't OCR anyway.
+  max_upload_mb: 50

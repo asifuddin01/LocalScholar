@@ -1,0 +1,21 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Node
+node_modules/
+frontend/dist/
+
+# Local data: uploaded papers, SQLite catalogue, vector index.
+# Never commit a user's library.
+data/*
+!data/.gitkeep
+
+# Model caches downloaded at first run
+.cache/
+.env
+
+# OS
+.DS_Store

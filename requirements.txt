@@ -1,0 +1,26 @@
+# ---- Web layer -------------------------------------------------------------
+fastapi>=0.115,<0.120
+uvicorn[standard]>=0.30,<0.40
+python-multipart>=0.0.9
+pydantic>=2.7,<3.0
+pyyaml>=6.0
+
+# ---- PDF parsing -----------------------------------------------------------
+# PyMuPDF gives per-span font metadata, which we use for heading detection.
+# NOTE: PyMuPDF is AGPL-3.0. See "License" in the README.
+pymupdf>=1.24,<2.0
+
+# ---- Embeddings + reranking (ONNX, no PyTorch) -----------------------------
+# fastembed runs BGE / cross-encoder models on onnxruntime. Chosen over
+# sentence-transformers because it avoids a ~2.5GB torch install and runs
+# comfortably in 8GB of RAM alongside a local LLM.
+fastembed>=0.4,<0.8
+
+# ---- Vector store (embedded, no server) ------------------------------------
+qdrant-client>=1.9,<2.0
+
+# ---- Lexical retrieval -----------------------------------------------------
+rank-bm25>=0.2.2
+
+# ---- LLM transport ---------------------------------------------------------
+httpx>=0.27
