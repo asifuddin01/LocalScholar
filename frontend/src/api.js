@@ -33,3 +33,40 @@ export function uploadDocuments(files) {
   for (const file of files) form.append('files', file)
   return request('/api/documents', { method: 'POST', body: form })
 }
+
+export function search({ query, method = 'dense', documentIds = [], topK = null }) {
+  return request('/api/search', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      query,
+      method,
+      document_ids: documentIds,
+      top_k: topK,
+    }),
+  })
+}
+
+export function ask({ question, documentIds = [], topK = null }) {
+  return request('/api/ask', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ question, document_ids: documentIds, top_k: topK }),
+  })
+}
+
+export function llmStatus() {
+  return request('/api/llm/status')
+}
+
+export function paperDetails(id, refresh = false) {
+  return request(`/api/documents/${id}/details${refresh ? '?refresh=true' : ''}`)
+}
+
+export function compare(documentIds) {
+  return request('/api/compare', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ document_ids: documentIds }),
+  })
+}

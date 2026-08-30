@@ -117,3 +117,51 @@ def test_single_column_pages_are_read_top_to_bottom():
 
 def test_clean_collapses_whitespace():
     assert _clean("  a   b \n c ") == "a b c"
+
+
+# --- running headers and footers --------------------------------------------
+
+def test_running_headers_are_removed(tmp_path):
+    """They are short, they repeat, and they outrank real evidence.
+
+    Both "Title Suppressed Due to Excessive Length 15" and a Nature volume
+    footer were observed beating genuine content for "What are the
+    limitations?", which is why they are stripped before indexing.
+    """
+    from tests.conftest import build_paper_with_running_header
+
+    path = tmp_path / "headered.pdf"
+    path.write_bytes(build_paper_with_running_header(pages=6))
+
+    doc = parse_pdf(path)
+    assert not [b for b in doc.blocks if "Suppressed" in b.text]
+    # The body survived.
+    assert any("300 annotated volumes" in b.text for b in doc.blocks)
+
+
+def test_repeated_body_text_is_not_mistaken_for_furniture(tmp_path):
+    """Only the margins are considered, so recurring content is safe."""
+    from tests.conftest import build_paper_with_running_header
+
+    path = tmp_path / "repeated.pdf"
+    path.write_bytes(
+        build_paper_with_running_header(pages=6, body="Dice score of 0.91 was reached. ")
+    )
+    doc = parse_pdf(path)
+    assert sum("Dice score of 0.91" in b.text for b in doc.blocks) >= 5
+
+
+def test_short_documents_keep_their_headers(tmp_path):
+    """Two pages is not enough evidence to call a line a running header."""
+    from tests.conftest import build_paper_with_running_header
+
+    path = tmp_path / "short.pdf"
+    path.write_bytes(build_paper_with_running_header(pages=2))
+    doc = parse_pdf(path)
+    assert any("Suppressed" in b.text for b in doc.blocks)
+
+
+def test_furniture_key_ignores_the_page_number():
+    from backend.ingestion.pdf_parser import _furniture_key
+
+    assert _furniture_key("Running Head 15") == _furniture_key("Running Head 16")

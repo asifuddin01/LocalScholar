@@ -12,8 +12,13 @@ import logging
 from pathlib import Path
 
 from backend.config import Config
-from backend.db import Catalogue, DocumentRecord
+from backend.db import STATUS_READY, Catalogue, DocumentRecord
+from backend.ingestion.chunking import chunk_document
 from backend.ingestion.pdf_parser import PDFParseError, parse_pdf
+from backend.generation.answering import AnswerService
+from backend.generation.extraction import ExtractionService
+from backend.generation.llm import create_llm_provider
+from backend.retrieval.engine import RetrievalEngine
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +34,31 @@ class LibraryService:
         self.config = config
         config.ensure_directories()
         self.catalogue = Catalogue(config.storage.catalogue_path)
+        self.engine = RetrievalEngine(config, self.catalogue)
+        self.llm = create_llm_provider(config.llm)
+        self.answers = AnswerService(self.llm, config.llm.context_char_budget)
+        self.extractions = ExtractionService(
+            self.engine, self.llm, config.llm.context_char_budget
+        )
+
+    def start(self) -> list[str]:
+        """Restore in-memory state at startup.
+
+        The BM25 index lives in memory, so it is rebuilt from SQLite on every
+        boot. Any document marked ready but holding no chunks was interrupted
+        mid-index (a crash, or a library created before indexing existed), so
+        it is queued to be processed again rather than sitting in the library
+        looking searchable while matching nothing.
+        """
+        self.engine.rebuild_bm25()
+        stale = [
+            record.id
+            for record in self.catalogue.list_documents()
+            if record.status == STATUS_READY and record.chunk_count == 0
+        ]
+        if stale:
+            logger.info("Re-indexing %d document(s) with no chunks", len(stale))
+        return stale
 
     # --- upload -------------------------------------------------------------
 
@@ -86,13 +116,30 @@ class LibraryService:
             self.catalogue.replace_pages(
                 document_id, [(p.page_number, p.text) for p in parsed.pages]
             )
+
+            chunks = chunk_document(
+                document_id=document_id,
+                filename=record.filename,
+                parsed=parsed,
+                config=self.config.chunking,
+            )
+            # SQLite first: it is the durable copy the BM25 index is rebuilt
+            # from, so it must be written before anything depends on it.
+            self.catalogue.replace_chunks(document_id, chunks)
+            self.engine.index_chunks(chunks)
+            self.engine.rebuild_bm25()
+
             self.catalogue.mark_ready(
                 document_id,
                 title=parsed.title,
                 page_count=parsed.page_count,
                 sections=parsed.sections,
+                chunk_count=len(chunks),
             )
-            logger.info("Indexed %s (%d pages)", record.filename, parsed.page_count)
+            logger.info(
+                "Indexed %s (%d pages, %d chunks)",
+                record.filename, parsed.page_count, len(chunks),
+            )
         except PDFParseError as exc:
             self.catalogue.mark_failed(document_id, str(exc))
             logger.warning("Failed to parse %s: %s", record.filename, exc)
@@ -116,4 +163,31 @@ class LibraryService:
         if record is None:
             return False
         Path(record.stored_path).unlink(missing_ok=True)
+        self.engine.remove_document(document_id)
         return True
+
+    def extract_details(self, document_id: str, refresh: bool = False) -> dict | None:
+        """Structured details for one paper, cached after the first run."""
+        record = self.catalogue.get_document(document_id)
+        if record is None:
+            return None
+        if not refresh:
+            cached = self.catalogue.get_extraction(document_id)
+            if cached is not None:
+                return cached
+
+        extraction = self.extractions.extract(document_id, record.filename)
+        payload = extraction.to_dict()
+        # The title is known from parsing page one; it is prepended as a field
+        # so the details view and the comparison table have a complete row set
+        # without the model ever being asked to guess it.
+        payload["title"] = record.title
+        payload["fields"].insert(0, {
+            "name": "title", "label": "Title",
+            "value": record.title or record.filename, "citations": [],
+        })
+        self.catalogue.save_extraction(document_id, payload.get("model", ""), payload)
+        return payload
+
+    def close(self) -> None:
+        self.engine.close()

@@ -33,7 +33,7 @@ export default function DocumentList({ documents, selectedId, onSelect, onDelete
 
           {doc.status === 'ready' && (
             <div className="paper__meta">
-              {doc.page_count} pages · {doc.sections.length} sections · {formatSize(doc.size_bytes)}
+              {doc.page_count} pages · {doc.chunk_count} chunks · {doc.sections.length} sections · {formatSize(doc.size_bytes)}
             </div>
           )}
           {doc.status === 'failed' && <div className="paper__error">{doc.error}</div>}

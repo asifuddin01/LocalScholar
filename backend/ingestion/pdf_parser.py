@@ -39,6 +39,9 @@ NUMBERED_HEADING_MAX_WORDS = 8  # ditto -- a heading is a label, not a sentence
 COLUMN_TOLERANCE_RATIO = 0.02   # slack when deciding which column a block is in
 MIN_CHARS_PER_PAGE = 40         # below this average, we assume a scanned PDF
 ROW_OVERLAP_RATIO = 0.5         # vertical overlap that makes two lines "a row"
+MARGIN_BAND_RATIO = 0.12        # top/bottom slice of a page holding furniture
+FURNITURE_MIN_PAGES = 3         # never treat a one-off line as a running header
+FURNITURE_PAGE_FRACTION = 0.25  # ...and it must recur on this share of pages
 
 COLUMN_FULL, COLUMN_LEFT, COLUMN_RIGHT = 0, 1, 2
 
@@ -354,6 +357,65 @@ def _clean(text: str) -> str:
     return _WHITESPACE_RE.sub(" ", text).strip()
 
 
+def _furniture_key(text: str) -> str:
+    """Normalise a line so the same running header matches across pages.
+
+    Digits are dropped because the page number is the one part that changes:
+    "Title Suppressed Due to Excessive Length 15" and "... 16" are the same
+    header and must collapse to the same key.
+    """
+    return _WHITESPACE_RE.sub(" ", re.sub(r"[\d\W_]+", " ", text.lower())).strip()
+
+
+def _remove_page_furniture(
+    pages: list[ParsedPage], page_heights: dict[int, float]
+) -> None:
+    """Drop running headers and footers, in place.
+
+    Journal templates stamp the same line onto every page: "750 | Nature |
+    Vol 614 | 23 February 2023", or LaTeX's "Title Suppressed Due to Excessive
+    Length 15". Indexed, these are actively harmful -- they are short, they
+    repeat, and they sit near the top of the similarity ranking for vague
+    questions, so they crowd out real evidence. Both of those strings were
+    observed beating genuine content for "What are the limitations?".
+
+    Only the top and bottom slivers of each page are considered, and a line has
+    to recur on several pages, so repeated *content* is never at risk.
+    """
+    if len(pages) < FURNITURE_MIN_PAGES:
+        return
+
+    pages_by_key: dict[str, set[int]] = {}
+    for page in pages:
+        height = page_heights.get(page.page_number, 0.0)
+        if height <= 0:
+            continue
+        for block in page.blocks:
+            if block.is_heading or len(block.text) > HEADING_MAX_CHARS:
+                continue
+            in_margin = (
+                block.bbox[1] < height * MARGIN_BAND_RATIO
+                or block.bbox[3] > height * (1 - MARGIN_BAND_RATIO)
+            )
+            key = _furniture_key(block.text)
+            if in_margin and len(key) >= 4:
+                pages_by_key.setdefault(key, set()).add(page.page_number)
+
+    threshold = max(FURNITURE_MIN_PAGES, int(len(pages) * FURNITURE_PAGE_FRACTION))
+    furniture = {key for key, seen in pages_by_key.items() if len(seen) >= threshold}
+    if not furniture:
+        return
+
+    for page in pages:
+        page.blocks = [
+            block for block in page.blocks
+            if block.is_heading or _furniture_key(block.text) not in furniture
+        ]
+        page.text = "\n\n".join(b.text for b in page.blocks if not b.is_heading)
+
+    logger.info("Removed %d running header/footer variant(s)", len(furniture))
+
+
 def _is_numbered_heading(text: str) -> bool:
     """Is this a numbered section heading, as opposed to a numbered list item?
 
@@ -525,6 +587,7 @@ def parse_pdf(path: str | Path) -> ParsedDocument:
         title = _extract_title(doc, body_size)
 
         pages: list[ParsedPage] = []
+        page_heights: dict[int, float] = {}
         sections: list[str] = []
         current_section: str | None = None
         in_references = False
@@ -532,6 +595,7 @@ def parse_pdf(path: str | Path) -> ParsedDocument:
         for page_index in range(doc.page_count):
             page = doc[page_index]
             page_number = page_index + 1
+            page_heights[page_number] = page.rect.height
             raw = page.get_text("dict")
             text_blocks = [b for b in raw.get("blocks", []) if b.get("type") == 0]
             ordered = _order_blocks(text_blocks, page.rect.width)
@@ -634,6 +698,8 @@ def parse_pdf(path: str | Path) -> ParsedDocument:
             pages.append(
                 ParsedPage(page_number=page_number, text=page_text, blocks=page_blocks)
             )
+
+        _remove_page_furniture(pages, page_heights)
 
         parsed = ParsedDocument(
             title=title, page_count=doc.page_count, pages=pages, sections=sections

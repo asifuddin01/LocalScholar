@@ -3,11 +3,15 @@ import * as api from './api.js'
 import UploadZone from './components/UploadZone.jsx'
 import DocumentList from './components/DocumentList.jsx'
 import DocumentViewer from './components/DocumentViewer.jsx'
+import SearchPanel from './components/SearchPanel.jsx'
+import AskPanel from './components/AskPanel.jsx'
+import ResearchPanel from './components/ResearchPanel.jsx'
 
 const POLL_INTERVAL_MS = 1500
 
 export default function App() {
   const [documents, setDocuments] = useState([])
+  const [selectedIds, setSelectedIds] = useState([])
   const [detail, setDetail] = useState(null)
   const [notices, setNotices] = useState([])
   const [uploading, setUploading] = useState(false)
@@ -56,8 +60,15 @@ export default function App() {
     setDetail(await api.getDocument(id))
   }
 
+  function toggleDocument(id) {
+    setSelectedIds((current) =>
+      current.includes(id) ? current.filter((x) => x !== id) : [...current, id],
+    )
+  }
+
   async function handleDelete(id) {
     await api.deleteDocument(id)
+    setSelectedIds((current) => current.filter((x) => x !== id))
     if (detail?.document.id === id) setDetail(null)
     await refresh()
   }
@@ -88,6 +99,20 @@ export default function App() {
           onDelete={handleDelete}
         />
       </section>
+
+      <AskPanel
+        documents={documents}
+        selectedIds={selectedIds}
+        onToggleDocument={toggleDocument}
+      />
+
+      <ResearchPanel documents={documents} selectedIds={selectedIds} />
+
+      <SearchPanel
+        documents={documents}
+        selectedIds={selectedIds}
+        onToggleDocument={toggleDocument}
+      />
 
       {detail && <DocumentViewer detail={detail} onClose={() => setDetail(null)} />}
     </div>

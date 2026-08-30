@@ -4,11 +4,101 @@
 # listed here -- a config key with no reader is a lie about what's tunable.
 
 storage:
-  # Where uploaded PDFs, the SQLite catalogue, and (later) the vector index live.
-  # Relative paths resolve against the repository root.
+  # Uploaded PDFs, the SQLite catalogue, the vector index and the model cache
+  # all live here. Relative paths resolve against the repository root.
   data_dir: ./data
 
 ingestion:
-  # Reject uploads larger than this. Research papers are rarely >30MB; anything
-  # much bigger is usually a scanned book, which we can't OCR anyway.
+  # Research papers are rarely >30MB; anything much bigger is usually a scanned
+  # book, which we can't OCR anyway.
   max_upload_mb: 50
+
+chunking:
+  # ~800 characters is roughly a long paragraph: big enough to hold a complete
+  # claim with its numbers ("trained on 300 CT scans, split 80/20"), small
+  # enough that a retrieved chunk is mostly signal. Chunks never cross a page
+  # or a section boundary regardless of these values -- that is what keeps one
+  # page number attached to every citation.
+  chunk_size: 800
+  overlap: 120
+  # A trailing fragment shorter than this is folded into the previous chunk
+  # instead of being indexed as a stub too small to answer anything.
+  min_chunk_size: 200
+  # Reference lists match query terms constantly (every paper name, every
+  # author) while containing no findings of their own.
+  exclude_sections:
+    - references
+    - bibliography
+    - acknowledgments
+    - acknowledgements
+
+embeddings:
+  # 'fastembed' runs ONNX models locally on CPU. No API key, no PyTorch.
+  provider: fastembed
+  # 384 dimensions, ~90MB, downloaded once and cached under data/models.
+  #
+  # Chosen by measurement, not reputation. The obvious pick, bge-small-en-v1.5,
+  # is served by fastembed as an int8-QUANTIZED ONNX build, and int8 kernels
+  # fall back to slow paths on Apple Silicon -- it benchmarked at 7 chunks/s
+  # against 31 for this model, i.e. 45s vs 10s to index a 43-page paper.
+  # Reproduce with: python scripts/benchmark_embeddings.py <some-paper.pdf>
+  #
+  # Alternatives, same 384 dimensions, no other config change needed:
+  #   sentence-transformers/all-MiniLM-L6-v2  -- ~78 chunks/s, weaker retrieval
+  #   BAAI/bge-small-en                       -- ~13 chunks/s, non-quantized BGE
+  model: snowflake/snowflake-arctic-embed-xs
+  # A correctness setting, not a tuning knob. Indexing runs off the main
+  # thread, and onnxruntime's default batch of 256 deadlocks inside
+  # session.run() in a background thread on macOS/ARM -- silently, forever.
+  # Measured on an M1, 321 chunks: 256 hangs, 128 = 24.5s, 64 = 18.7s,
+  # 32 = 20.5s, 16 = 20.1s. Raise it only if you have verified your platform
+  # does not hang.
+  batch_size: 32
+
+retrieval:
+  # Each retriever proposes this many candidates before fusion (milestone 3).
+  dense_top_k: 20
+  bm25_top_k: 20
+  # How many chunks survive to become LLM context.
+  final_top_k: 6
+  # Reciprocal Rank Fusion constant. Higher values flatten the difference
+  # between the top ranks, so agreement between the two retrievers matters
+  # more than either one's first place.
+  rrf_k: 60
+  dense_weight: 1.0
+  bm25_weight: 1.0
+
+reranker:
+  # A cross-encoder scores (query, chunk) pairs jointly instead of comparing
+  # two independently-produced vectors, so it is far more accurate -- and far
+  # too slow to run over the whole corpus. It only ever sees the fused
+  # candidates. Set enabled: false if you want the pipeline to stay leaner;
+  # everything still works, slightly less well.
+  enabled: true
+  model: Xenova/ms-marco-MiniLM-L-6-v2
+  batch_size: 16
+  candidates: 24
+
+llm:
+  # 'ollama' keeps everything on this machine and needs no API key.
+  provider: ollama
+  # qwen2.5:3b-instruct is the default because it fits comfortably in 8GB
+  # alongside the embedding and reranking models, and it follows the strict
+  # citation format this app depends on. On 16GB+, qwen2.5:7b-instruct is
+  # noticeably better at multi-paper synthesis.
+  model: qwen2.5:3b-instruct
+  host: http://localhost:11434
+  # Near-zero: this is an extraction task, not a creative one.
+  temperature: 0.1
+  num_ctx: 8192
+  timeout_seconds: 180
+  # Keeps the model loaded between questions. Measured on an M1: a cold call
+  # costs ~32s of model loading, a warm one ~2.2s, for identical work.
+  keep_alive: 30m
+  # Hard cap on retrieved text put in front of the model.
+  context_char_budget: 6000
+  # For an OpenAI-compatible server (vLLM, LM Studio). Setting provider to
+  # 'openai' is an explicit choice to let document text leave the machine --
+  # nothing ever falls back to it automatically.
+  # base_url: http://localhost:8001/v1
+  # api_key: null

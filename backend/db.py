@@ -14,7 +14,10 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Iterator
+from typing import TYPE_CHECKING, Iterator
+
+if TYPE_CHECKING:
+    from backend.ingestion.chunking import Chunk
 
 # Document lifecycle. The UI polls until a document leaves PROCESSING.
 STATUS_PROCESSING = "processing"
@@ -34,6 +37,24 @@ CREATE TABLE IF NOT EXISTS documents (
     error        TEXT,
     size_bytes   INTEGER NOT NULL DEFAULT 0,
     stored_path  TEXT NOT NULL,
+    created_at   TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS chunks (
+    chunk_id     TEXT PRIMARY KEY,
+    document_id  TEXT NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
+    ordinal      INTEGER NOT NULL,
+    page_number  INTEGER NOT NULL,
+    section      TEXT,
+    text         TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_chunks_document ON chunks(document_id);
+
+CREATE TABLE IF NOT EXISTS extractions (
+    document_id  TEXT PRIMARY KEY REFERENCES documents(id) ON DELETE CASCADE,
+    model        TEXT NOT NULL,
+    payload      TEXT NOT NULL,
     created_at   TEXT NOT NULL
 );
 
@@ -127,6 +148,63 @@ class Catalogue:
             ).fetchone()
         return DocumentRecord.from_row(row) if row else None
 
+    def get_chunks(self, document_id: str | None = None) -> list["Chunk"]:
+        """Load chunks, joining the document row for filename and title.
+
+        SQLite is the durable copy of the chunk text: the BM25 index is rebuilt
+        from here on startup, and it is what keeps the lexical and vector
+        stores from drifting apart.
+        """
+        from backend.ingestion.chunking import Chunk
+
+        query = (
+            "SELECT c.chunk_id, c.document_id, c.ordinal, c.page_number, "
+            "       c.section, c.text, d.filename, d.title "
+            "FROM chunks c JOIN documents d ON d.id = c.document_id "
+        )
+        params: tuple = ()
+        if document_id is not None:
+            query += "WHERE c.document_id = ? "
+            params = (document_id,)
+        query += "ORDER BY c.document_id, c.ordinal"
+
+        with self._connect() as conn:
+            rows = conn.execute(query, params).fetchall()
+
+        return [
+            Chunk(
+                chunk_id=row["chunk_id"],
+                document_id=row["document_id"],
+                filename=row["filename"],
+                text=row["text"],
+                page_number=row["page_number"],
+                section=row["section"],
+                ordinal=row["ordinal"],
+                title=row["title"],
+            )
+            for row in rows
+        ]
+
+    def get_extraction(self, document_id: str) -> dict | None:
+        """Structured extraction is slow enough (three model calls) that
+        re-running it for every comparison would be unusable."""
+        with self._connect() as conn:
+            row = conn.execute(
+                "SELECT payload FROM extractions WHERE document_id = ?", (document_id,)
+            ).fetchone()
+        return json.loads(row["payload"]) if row else None
+
+    def save_extraction(self, document_id: str, model: str, payload: dict) -> None:
+        with self._write_lock, self._connect() as conn:
+            conn.execute(
+                "INSERT INTO extractions (document_id, model, payload, created_at) "
+                "VALUES (?, ?, ?, ?) ON CONFLICT(document_id) DO UPDATE SET "
+                "model = excluded.model, payload = excluded.payload, "
+                "created_at = excluded.created_at",
+                (document_id, model, json.dumps(payload),
+                 datetime.now(timezone.utc).isoformat()),
+            )
+
     def get_pages(self, document_id: str) -> list[tuple[int, str]]:
         with self._connect() as conn:
             rows = conn.execute(
@@ -181,11 +259,25 @@ class Catalogue:
                 [(document_id, n, t) for n, t in pages],
             )
 
+    def replace_chunks(self, document_id: str, chunks: list["Chunk"]) -> None:
+        with self._write_lock, self._connect() as conn:
+            conn.execute("DELETE FROM extractions WHERE document_id = ?", (document_id,))
+            conn.execute("DELETE FROM chunks WHERE document_id = ?", (document_id,))
+            conn.executemany(
+                "INSERT INTO chunks (chunk_id, document_id, ordinal, page_number, "
+                "section, text) VALUES (?, ?, ?, ?, ?, ?)",
+                [
+                    (c.chunk_id, document_id, c.ordinal, c.page_number, c.section, c.text)
+                    for c in chunks
+                ],
+            )
+
     def delete_document(self, document_id: str) -> DocumentRecord | None:
         record = self.get_document(document_id)
         if record is None:
             return None
         with self._write_lock, self._connect() as conn:
+            conn.execute("DELETE FROM chunks WHERE document_id = ?", (document_id,))
             conn.execute("DELETE FROM pages WHERE document_id = ?", (document_id,))
             conn.execute("DELETE FROM documents WHERE id = ?", (document_id,))
         return record

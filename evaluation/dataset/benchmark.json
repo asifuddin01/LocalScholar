@@ -1,0 +1,52 @@
+{
+  "description": "Hand-written retrieval/answer benchmark for LocalScholar. Every question was written by reading the papers; every `evidence_keywords` list is verified against the indexed chunks by validate_benchmark(), which fails loudly rather than letting an unanswerable question inflate a score.",
+  "papers": [
+    "ieee_food_expiry.pdf",
+    "arxiv_2503.21465.pdf",
+    "paper3.pdf",
+    "14_ CellOracle Kamimoto 2023 Nature in silico perturbation .pdf"
+  ],
+  "questions": [
+    {"id": "d1", "category": "dataset", "question": "How many fruit images are in the dataset?", "paper": "ieee_food_expiry.pdf", "gold_pages": [2], "evidence_keywords": ["13,599"]},
+    {"id": "d2", "category": "dataset", "question": "How was the fruit dataset split between training and testing?", "paper": "ieee_food_expiry.pdf", "gold_pages": [2], "evidence_keywords": ["10,901", "2,698"]},
+    {"id": "d3", "category": "dataset", "question": "What fruit categories does the dataset contain?", "paper": "ieee_food_expiry.pdf", "gold_pages": [2], "evidence_keywords": ["apples", "bananas", "oranges"]},
+    {"id": "d4", "category": "dataset", "question": "What environmental metadata was recorded alongside the images?", "paper": "ieee_food_expiry.pdf", "gold_pages": [2], "evidence_keywords": ["humidity", "temperature"]},
+    {"id": "d5", "category": "dataset", "question": "Which retinal dataset did the authors choose for their experiments?", "paper": "arxiv_2503.21465.pdf", "gold_pages": [3], "evidence_keywords": ["MuReD"]},
+    {"id": "d6", "category": "dataset", "question": "Which benchmark datasets are used in the federated learning simulations on model compression?", "paper": "paper3.pdf", "gold_pages": [12], "evidence_keywords": ["MNIST", "CIFAR-10"]},
+
+    {"id": "m1", "category": "method", "question": "Which optimizer was used to train the models?", "paper": "arxiv_2503.21465.pdf", "gold_pages": [13], "evidence_keywords": ["AdamW"]},
+    {"id": "m2", "category": "method", "question": "What learning rate scheduler was used?", "paper": "arxiv_2503.21465.pdf", "gold_pages": [13], "evidence_keywords": ["Cosine Annealing"]},
+    {"id": "m3", "category": "method", "question": "What data augmentation was applied to the images?", "paper": "arxiv_2503.21465.pdf", "gold_pages": [5], "evidence_keywords": ["augmentation"]},
+    {"id": "m4", "category": "method", "question": "Which machine learning models were compared for freshness classification?", "paper": "ieee_food_expiry.pdf", "gold_pages": [2], "evidence_keywords": ["Random Forest", "MLP"]},
+    {"id": "m5", "category": "method", "question": "What preprocessing was applied to the categorical columns?", "paper": "ieee_food_expiry.pdf", "gold_pages": [2], "evidence_keywords": ["label encoding"]},
+    {"id": "m6", "category": "method", "question": "What is CellOracle and what does it simulate?", "paper": "14_ CellOracle Kamimoto 2023 Nature in silico perturbation .pdf", "gold_pages": [1], "evidence_keywords": ["CellOracle"]},
+    {"id": "m7", "category": "method", "question": "How does model compression reduce communication cost in federated learning?", "paper": "paper3.pdf", "gold_pages": [12], "evidence_keywords": ["compression"]},
+
+    {"id": "r1", "category": "results", "question": "What accuracy did the CNN achieve?", "paper": "ieee_food_expiry.pdf", "gold_pages": [2, 3], "evidence_keywords": ["CNN", "96"]},
+    {"id": "r2", "category": "results", "question": "What model score did the best performing model reach?", "paper": "arxiv_2503.21465.pdf", "gold_pages": [1], "evidence_keywords": ["0.9166"]},
+    {"id": "r3", "category": "results", "question": "What AUC did the support vector machine achieve?", "paper": "ieee_food_expiry.pdf", "gold_pages": [2], "evidence_keywords": ["SVM", "0.897"]},
+    {"id": "r4", "category": "results", "question": "What accuracy did gradient boosting reach?", "paper": "ieee_food_expiry.pdf", "gold_pages": [2], "evidence_keywords": ["Gradient Boosting", "0.811"]},
+
+    {"id": "l1", "category": "limitations", "question": "What limitations did the authors acknowledge about their evaluation?", "paper": "ieee_food_expiry.pdf", "gold_pages": [4], "evidence_keywords": ["limitation"]},
+    {"id": "l2", "category": "limitations", "question": "What limitations does CellOracle have regarding input data?", "paper": "14_ CellOracle Kamimoto 2023 Nature in silico perturbation .pdf", "gold_pages": [9], "evidence_keywords": ["limit"]},
+    {"id": "l3", "category": "limitations", "question": "What improvements do the authors suggest for future work on food expiry prediction?", "paper": "ieee_food_expiry.pdf", "gold_pages": [4], "evidence_keywords": ["improvement"]},
+
+    {"id": "e1", "category": "extraction", "question": "What is the main contribution of the retinal fundus classification paper?", "paper": "arxiv_2503.21465.pdf", "gold_pages": [1, 2], "evidence_keywords": ["ensemble"]},
+    {"id": "e2", "category": "extraction", "question": "What problem does federated learning solve for mobile edge networks?", "paper": "paper3.pdf", "gold_pages": [1, 2, 3], "evidence_keywords": ["privacy"]},
+    {"id": "e3", "category": "extraction", "question": "What is the goal of the food expiry prediction system?", "paper": "ieee_food_expiry.pdf", "gold_pages": [1], "evidence_keywords": ["food waste"]},
+    {"id": "e4", "category": "extraction", "question": "Which transformer variant did the authors propose or adapt?", "paper": "arxiv_2503.21465.pdf", "gold_pages": [9, 1], "evidence_keywords": ["IEViT"]},
+    {"id": "e5", "category": "extraction", "question": "What security issues are discussed for federated learning?", "paper": "paper3.pdf", "gold_pages": [19, 20, 21], "evidence_keywords": ["security"]},
+    {"id": "e6", "category": "extraction", "question": "What are the statistical challenges of federated learning?", "paper": "paper3.pdf", "gold_pages": [7, 8], "evidence_keywords": ["non-IID", "statistical"]},
+
+    {"id": "t1", "category": "terminology", "question": "RFMiD dataset", "paper": "arxiv_2503.21465.pdf", "gold_pages": [3], "evidence_keywords": ["RFMiD"]},
+    {"id": "t2", "category": "terminology", "question": "FEMNIST LEAF benchmark", "paper": "paper3.pdf", "gold_pages": [9], "evidence_keywords": ["FEMNIST"]},
+    {"id": "t3", "category": "terminology", "question": "gene regulatory network inference", "paper": "14_ CellOracle Kamimoto 2023 Nature in silico perturbation .pdf", "gold_pages": [1, 2], "evidence_keywords": ["GRN"]},
+    {"id": "t4", "category": "terminology", "question": "zebrafish experiments", "paper": "14_ CellOracle Kamimoto 2023 Nature in silico perturbation .pdf", "gold_pages": [1, 5, 6, 7], "evidence_keywords": ["zebrafish"]}
+  ],
+  "unanswerable": [
+    {"id": "u1", "question": "What was the Dice score on the KiTS19 kidney tumour segmentation benchmark?", "why": "no paper in this library uses KiTS19"},
+    {"id": "u2", "question": "How much did the authors pay for their GPU cluster?", "why": "cost is never discussed"},
+    {"id": "u3", "question": "What is the melting point of gallium?", "why": "entirely outside the corpus"},
+    {"id": "u4", "question": "Which paper reports the highest BLEU score on WMT14 English-German?", "why": "no machine translation work in this library"}
+  ]
+}

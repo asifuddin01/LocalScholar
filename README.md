@@ -1,45 +1,43 @@
 # LocalScholar
 
-A privacy-first research paper assistant that runs entirely on your own machine — no API key, no uploads to anyone's server.
+A research-paper assistant that runs entirely on your own machine. No API key, no uploads,
+no account. Ask questions across your PDF library and get answers with page-level citations
+you can check.
 
-> **Status: Milestone 1 of 7 complete.** The library, the PDF pipeline and the UI work end to end today.
-> Retrieval, the local LLM and citations land in the following milestones. See [Roadmap](#roadmap).
-> Nothing in this README describes a feature that isn't implemented.
+![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue)
+![License](https://img.shields.io/badge/code-MIT-green)
 
 ---
 
 ## Why this exists
 
-Reading a paper for the first time is interesting. Going back to it for the fourth time to re-find
-which dataset they used, how many samples were in it, and what the authors admitted in the
-limitations section is not. That re-reading is most of the cost of a literature review, and it
-scales badly: comparing eight papers on those axes means forty separate searches through eight PDFs.
+Reading a paper the first time is interesting. Going back a fourth time to re-find which
+dataset they used, how many samples it had, and what the authors admitted in the limitations
+section is not. That re-reading is most of the cost of a literature review, and it scales
+badly: comparing eight papers on those axes means forty separate searches through eight PDFs.
 
-LocalScholar indexes your papers locally and answers those questions with page-level citations, so
-every claim can be checked against the actual PDF. It runs against a local LLM because papers under
-review are frequently unpublished, confidential, or someone else's intellectual property, and
-pasting them into a hosted API is often not an option.
+LocalScholar indexes papers locally and answers those questions with citations down to the
+page and section, so every claim can be checked against the PDF. It runs on a local LLM
+because papers under review are often unpublished, confidential, or someone else's
+intellectual property, and pasting them into a hosted API is frequently not an option.
 
-## What works today
+## What it does
 
-| Capability | Status |
-|---|---|
-| Upload many PDFs at once, drag-and-drop | ✅ |
-| Local PDF parsing with page + section metadata | ✅ |
-| Two-column research-paper layout handling | ✅ |
-| Automatic section outline extraction | ✅ |
-| Content-addressed deduplication | ✅ |
-| Per-file error reporting, background processing | ✅ |
-| Inspect extracted text page by page | ✅ |
-| Chunking, embeddings, vector + BM25 index | Milestone 2 |
-| Hybrid retrieval, reranking, grounded QA | Milestones 3–4 |
-| Summaries, structured extraction, comparison | Milestone 5 |
-| Evaluation benchmark and retrieval ablation | Milestone 6 |
-| Docker | Milestone 7 |
+- **Multi-PDF library** — drag in a stack of papers; each is parsed, chunked and indexed
+- **Hybrid retrieval** — dense embeddings + BM25, fused with Reciprocal Rank Fusion
+- **Cross-encoder reranking** — a second, more accurate pass over the fused candidates
+- **Grounded answers** — every claim carries a `[n]` citation you can click through to the
+  supporting passage, with paper, page and section
+- **Refuses to guess** — if the papers don't support an answer, it says so
+- **Structured extraction** — dataset, size, architecture, training, metrics, results,
+  limitations, future work, each with its own citations
+- **Paper comparison** — the same extraction rendered as a side-by-side table
+- **Runs offline** — after the one-time model downloads, no network access at all
 
 ## Quick start
 
-Requires **Python 3.11 or 3.12** (not 3.13+ — the ONNX runtime wheels lag) and **Node 18+**.
+Requires **Python 3.11 or 3.12** (not 3.13+; the ONNX wheels lag), **Node 18+**, and
+**[Ollama](https://ollama.com)**.
 
 ```bash
 git clone <repo-url> && cd LocalScholar
@@ -47,173 +45,309 @@ python3.12 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
 npm --prefix frontend install
 ```
 
-Run the two processes in separate terminals:
+Get the local model (~1.9GB, once):
 
 ```bash
-.venv/bin/python -m uvicorn backend.main:app --reload --port 8000
+brew install ollama && ollama serve
+```
+
+```bash
+ollama pull qwen2.5:3b-instruct
+```
+
+Then start the two processes in separate terminals:
+
+```bash
+.venv/bin/python -m uvicorn backend.main:app --port 8000
 ```
 
 ```bash
 npm --prefix frontend run dev
 ```
 
-Then open <http://localhost:5173>. Drop some PDFs in.
+Open <http://localhost:5173> and drop in some PDFs.
 
-No API key is needed, and no network call is made while indexing.
+The embedding and reranking models (~150MB total) download from Hugging Face on first use and
+are cached in `data/models`. After that the whole system runs with no network access.
 
-## Stack, and why each piece is there
-
-Every dependency here is carrying weight. The notable choices:
-
-**PyMuPDF for parsing.** Research PDFs are two-column, ligature-heavy and full of tables. PyMuPDF
-exposes per-span font size, weight and bounding boxes, which the parser needs to tell a section
-heading from a table cell. Pure-text extractors throw that information away.
-
-**fastembed (ONNX) instead of sentence-transformers.** Both run the same BGE embedding models, but
-sentence-transformers pulls in PyTorch: about 2.5GB installed. fastembed runs the same models on
-`onnxruntime` in roughly 300MB total, which matters a great deal when a local LLM is already
-competing for memory on an 8GB laptop. It also supplies the cross-encoder reranker, so the reranking
-stage needs no extra ML framework.
-
-**Qdrant in embedded mode.** Runs in-process against a local directory. No server, no container, no
-port. A vector database you have to start is a vector database that makes `git clone && run` fail.
-
-**SQLite for the catalogue.** The library metadata and extracted page text are relational and tiny.
-
-**FastAPI + React/Vite.** Background tasks come free with FastAPI, which is what keeps upload
-responsive while a 34-page survey is parsed.
-
-## Architecture (as built)
+## Architecture
 
 ```
-      ┌──────────────┐   multipart    ┌─────────────────────┐
-      │  React UI    │ ─────────────► │  FastAPI            │
-      │  :5173       │ ◄───────────── │  :8000              │
-      └──────────────┘   poll status  └──────────┬──────────┘
-                                                 │
-                              validate + SHA-256 │  (duplicate check)
-                                                 ▼
-                                      ┌─────────────────────┐
-                                      │ data/uploads/*.pdf  │
-                                      └──────────┬──────────┘
-                                                 │  background task
-                                                 ▼
-                                      ┌─────────────────────┐
-                                      │ pdf_parser          │
-                                      │  · column ordering  │
-                                      │  · heading tracking │
-                                      │  · de-hyphenation   │
-                                      └──────────┬──────────┘
-                                                 ▼
-                                      ┌─────────────────────┐
-                                      │ SQLite catalogue    │
-                                      │  documents / pages  │
-                                      └─────────────────────┘
+   PDF ──► parse ──► chunk ──► embed ──────► Qdrant  (dense, on disk)
+            │          │                 └─► BM25    (lexical, in memory)
+            │          │
+            │          └─ every chunk keeps: document, page, section
+            │
+            └─ two-column reading order, heading detection, header stripping
+
+
+   question
+      │
+      ├──► dense retrieval  (top 20) ──┐
+      │                                ├─► Reciprocal Rank Fusion ─► top 24
+      └──► BM25 retrieval   (top 20) ──┘                              │
+                                                                      ▼
+                                                        cross-encoder reranker
+                                                                      │
+                                                                 top 6 chunks
+                                                                      ▼
+                                             local LLM (Ollama) with numbered sources
+                                                                      │
+                                                    answer + validated citations
 ```
 
-## The parser is the interesting part
+Nothing leaves the machine at any stage.
 
-Citations are the whole point of this project, and a citation is only as good as the metadata
-attached to the text it came from. Every block the parser emits carries `page_number` and `section`.
-If those are lost at parse time, no amount of retrieval quality gets them back.
+## Why each component is there
 
-Four problems had to be solved to keep them accurate, each found by running against real papers:
+**Two retrievers, because they fail in opposite directions.** Embeddings are good at
+paraphrase and bad at rare literal strings; BM25 is the reverse. On this corpus, "what
+optimizer was used?" is nearly invisible to the embedding model and lands BM25 directly on the
+hyperparameter table containing `AdamW`. "What are the limitations?" is the other way round.
+Neither is sufficient alone, and the ablation below shows it.
 
-**Two-column reading order.** Sorting blocks top-to-bottom reads a two-column paper as "left line 1,
-right line 1, left line 2…", which shreds every sentence. The parser detects the two-column case
-from block geometry and reads each column to its end.
+**Reciprocal Rank Fusion rather than adding scores.** Cosine similarity sits in roughly
+[0.5, 0.8] here; BM25 is unbounded and routinely returns 6 for junk and 18 for a good hit.
+Normalising and summing lets whichever retriever happens to have the wider spread on that
+query dominate. RRF discards the scores and uses only ranks, so a chunk found by *both*
+retrievers beats one found by either alone.
 
-**Spaces.** PyMuPDF emits inter-word spaces as their own spans. Filtering spans by "does it have
-content" before joining them produces `LeveragingCNNandRandomForest` — which destroys tokenisation
-for BM25 as thoroughly as it destroys readability.
+**A cross-encoder reranker on the shortlist only.** Dense retrieval compares two vectors
+produced without ever seeing each other. A cross-encoder reads the query and the passage
+together and is far more accurate — and far too slow to run over a whole corpus. Retrieve
+broadly, then rank precisely. It is the single biggest win in the ablation (+0.10 Recall@1)
+and also the slowest stage (~2.5s), so it is one config flag away from being switched off.
 
-**Headings vs. table cells.** Detection is biased hard toward precision, because a false heading is
-worse than a missed one: it becomes the running section label for everything after it, so a single
-bold table cell can mislabel half a page and every citation drawn from it. Font size and weight turn
-out to be useless signals on their own — the IEEE template sets *every* heading at body size with no
-bold — so the parser uses layout instead: a heading owns its line, while a table cell has siblings
-to its left and right at the same height. Reference lists switch heading detection off entirely.
+**Chunks never cross a page or a section.** This splits the occasional paragraph, and it is
+worth it: it means every chunk has exactly one page number. A chunk straddling pages 4 and 5
+can only ever produce a vague citation, and a vague citation is one nobody can check.
 
-**Split section numbers.** Springer/LNCS papers store `1  Introduction` as two separate text lines.
-Those are rejoined before anything else runs, which fixes both the lost numbering and the heading
-that the stray `1` was suppressing.
+**SQLite + embedded Qdrant, no services.** A vector database you have to start is a vector
+database that makes `git clone && run` fail.
 
-Measured against three real papers in three different templates:
+## Evaluation
 
-| Paper | Template | Pages | Sections recovered |
+30 hand-written questions over four real papers (a Springer/LNCS retinal-imaging paper, an
+IEEE food-expiry paper, a 34-page IEEE federated-learning survey, and a 43-page Nature
+CellOracle paper) — 705 chunks in total. Questions cover datasets, methods, results,
+limitations, extraction and bare terminology.
+
+A chunk counts as relevant only if it comes from the expected paper **and** contains the
+question's evidence keywords. The harness validates every question against the live index
+first and loudly excludes any whose evidence is unreachable, so an unanswerable question can
+never quietly inflate a score.
+
+Reproduce with:
+
+```bash
+.venv/bin/python evaluation/retrieval_eval.py
+```
+
+### Retrieval ablation
+
+| Method | Recall@1 | Recall@3 | Recall@5 | Recall@10 | MRR | Median latency |
+|---|---|---|---|---|---|---|
+| BM25 only | 0.533 | 0.767 | 0.833 | 0.867 | 0.659 | 1 ms |
+| Dense only | 0.733 | 0.833 | 0.867 | 0.900 | 0.795 | 7 ms |
+| Hybrid (RRF) | 0.700 | 0.900 | 0.900 | 0.933 | 0.798 | 10 ms |
+| **Hybrid + reranker** | **0.800** | **0.900** | **0.933** | **0.933** | **0.857** | 2517 ms |
+
+Measured, not estimated. Two things in that table are worth reading carefully:
+
+- **Hybrid's Recall@1 (0.700) is *below* dense alone (0.733).** Fusion clearly helps deeper in
+  the ranking — Recall@3 goes 0.833 → 0.900 — but mixing in BM25's ordering can knock the
+  single best chunk off the top spot. This is exactly the gap the reranker closes, taking
+  Recall@1 to 0.800. Reporting the hybrid row without the reranker row would have made hybrid
+  look like a regression; reporting only the final number would have hidden why the reranker
+  is there.
+- **The reranker costs ~250x the latency of fusion** for +0.06 MRR. On this hardware that is
+  ~2.5s per question against ~2.2s for the model itself. Worth it here, and `reranker.enabled:
+  false` for anyone who disagrees.
+
+Two questions are missed by every method (`d5`, `e6`), which is a fair result rather than a
+tuning failure: both ask about a concept the paper expresses in wording no retriever matches.
+
+## Measurements that changed the design
+
+Three findings that came from running against real papers rather than reasoning about them.
+
+**The obvious embedding model was the worst option.** fastembed serves
+`BAAI/bge-small-en-v1.5` as an *int8-quantized* ONNX build, and int8 kernels fall back to slow
+paths on Apple Silicon:
+
+| Model | chunks/s | Peak RSS |
+|---|---|---|
+| `BAAI/bge-small-en-v1.5` (quantized) | 7.4 | 720 MB |
+| `BAAI/bge-small-en` (not quantized) | 12.9 | 569 MB |
+| **`snowflake/snowflake-arctic-embed-xs`** | **30.8** | 654 MB |
+| `all-MiniLM-L6-v2` | 77.8 | 387 MB |
+
+Reproduce with `python scripts/benchmark_embeddings.py <paper.pdf>`.
+
+**onnxruntime deadlocks off the main thread.** Indexing runs in a background thread so uploads
+stay responsive. With onnxruntime's default batch of 256, `session.run()` hangs *silently* —
+no exception, no timeout, the document sits at "processing" forever while the process idles at
+2% CPU. Batches of 128/64/32/16 all work. The default is 32, and there is a regression test
+that indexes a 490-chunk document through the real background-thread path.
+
+**`query_embed()` does nothing.** fastembed exposes a query-side method that looks like it
+applies the model's instruction prefix; for these models it is a plain alias for `embed()`,
+verified by comparing the two vectors. LocalScholar applies the prefix itself. Before the fix,
+"What are the limitations of this approach?" retrieved an IEEE copyright banner; after it, the
+paper's actual `F. Limitation` section.
+
+## How grounding is enforced
+
+Refusing to fabricate is a property of the pipeline, not a line in the prompt:
+
+1. The model only ever sees text retrieved from your PDFs.
+2. Every passage is numbered and the model must cite those numbers.
+3. **Citations pointing at a source that wasn't retrieved are stripped after generation**, so
+   an invented `[7]` cannot reach you.
+4. **An answer with no surviving citation is rejected** and reported as no-evidence.
+5. If nothing is retrieved, the model is never called at all.
+
+Point 4 earns its keep. Asked to extract paper metadata, the 3B model confidently produced the
+title *"Privacy-Preserving Ordinal-Meta Learning for Food Freshness"* by *"Kumar et al. (2025)"*
+for a paper actually called *"Leveraging CNN and Random Forest for Accurate Food Expiry
+Prediction"* — and cited nothing, because nothing in the paper said it. The no-citation rule
+caught all three fabricated fields automatically. (The title is now taken from the parser,
+which read it off page one: never ask a model for something you already know.)
+
+Fields the papers genuinely don't state come back as **"Not reported"** rather than a
+plausible guess. A comparison table with every cell filled in is a table that has been
+guessed at.
+
+## The parser
+
+Citations are only as good as the metadata attached to the text, so every block keeps its page
+number and section. Four problems had to be solved, each found on a real paper:
+
+- **Two-column reading order.** Sorting blocks top-to-bottom reads a two-column paper as "left
+  line 1, right line 1, left line 2…", shredding every sentence.
+- **Spaces.** PyMuPDF emits inter-word spaces as their own spans; filtering spans by "has
+  content" before joining produces `LeveragingCNNandRandomForest`.
+- **Headings vs. table cells.** Font size and weight are useless signals on their own — the
+  IEEE template sets *every* heading at body size with no bold. Detection uses layout instead:
+  a heading owns its line, a table cell has siblings beside it at the same height. A false
+  heading is worse than a missed one, because it becomes the running section label for
+  everything after it.
+- **Split section numbers.** Springer/LNCS stores `1  Introduction` as two text lines; the
+  stray `1` looks like a table cell and suppresses the heading. Rejoining them took one paper
+  from 3 detected sections to 20.
+
+Running headers are stripped before indexing — `Title Suppressed Due to Excessive Length 15`
+and a Nature volume footer were both observed outranking real content for "what are the
+limitations?".
+
+Section recovery across three templates:
+
+| Paper | Template | Pages | Sections |
 |---|---|---|---|
-| Retinal Fundus Multi-Disease Classification | Springer/LNCS, 1-col | 17 | 20 — full outline, `1 Introduction` → `7 Conclusion` |
-| Food Expiry Prediction (CNN + RF) | IEEE, 2-col | 4 | 17 — including all `A.`–`H.` subsections |
+| Retinal Fundus Multi-Disease Classification | Springer/LNCS, 1-col | 17 | 20 — `1 Introduction` → `7 Conclusion` |
+| Food Expiry Prediction | IEEE, 2-col | 4 | 17 — including every `A.`–`H.` subsection |
 | Federated Learning in Mobile Edge Networks | IEEE survey, 2-col | 34 | 37 — matches the paper's table of contents |
 
 ## Configuration
 
-`configs/default.yaml` holds the tunable settings. Only keys the code actually reads are listed
-there; the file grows with each milestone.
+Everything tunable lives in `configs/default.yaml`; only keys the code actually reads are
+listed there. Highlights:
 
 ```yaml
-storage:
-  data_dir: ./data
-ingestion:
-  max_upload_mb: 50
+chunking:   { chunk_size: 800, overlap: 120 }
+embeddings: { model: snowflake/snowflake-arctic-embed-xs, batch_size: 32 }
+retrieval:  { dense_top_k: 20, bm25_top_k: 20, final_top_k: 6, rrf_k: 60 }
+reranker:   { enabled: true }
+llm:        { provider: ollama, model: qwen2.5:3b-instruct, keep_alive: 30m }
 ```
 
-Two optional environment overrides (see `.env.example`): `LOCALSCHOLAR_CONFIG` and
-`LOCALSCHOLAR_DATA_DIR`.
+`qwen2.5:3b-instruct` is the default because it fits in 8GB alongside the embedding and
+reranking models. On 16GB+, `qwen2.5:7b-instruct` is noticeably better at multi-paper
+synthesis — change one line.
 
-Heuristic constants in the parser are deliberately *not* exposed as configuration — changing them
-requires reading the code, and surfacing them as user settings would imply a tuning story that
-doesn't exist.
+For an OpenAI-compatible server, set `llm.provider: openai` and `llm.base_url`. Nothing ever
+falls back to it automatically: if the local model is down, requests fail loudly. Silently
+shipping an unpublished paper to a hosted API because a local server was off would break the
+one promise this project makes.
+
+## Performance on an 8GB M1
+
+| Operation | Time |
+|---|---|
+| Parse + index a 43-page paper | ~25 s |
+| Retrieval (hybrid, no reranker) | ~10 ms |
+| Retrieval + reranking | ~2.5 s |
+| Answer generation (model warm) | ~2.2 s |
+| First question after startup | ~30 s (model load) |
+| Structured extraction, one paper | ~55 s (cached afterwards) |
+
+The model is warmed at startup and held resident via `keep_alive`, because a cold call costs
+~32s of loading against ~2.2s warm for identical work.
 
 ## Tests
 
 ```bash
-.venv/bin/python -m pytest tests/ -q
+.venv/bin/python -m pytest tests/ -q        # 70 tests, ~2s
+.venv/bin/python -m pytest tests/ -m slow   # + real embedding model
 ```
 
-30 tests, covering PDF parsing, page-number and section preservation, column ordering, heading
-classification against the real false positives that motivated each rule, and the API surface
-(multipart upload, background status transitions, deduplication, per-file rejection, deletion).
+Covers PDF parsing, page/section preservation, column ordering, heading classification against
+the real false positives that motivated each rule, chunking invariants, BM25 and vector
+search, citation validation, and the API surface. The slow tests exercise the real model,
+including the 490-chunk background-thread indexing regression test.
 
-Test PDFs are generated in memory rather than committed as binaries, so the layout under test is
-readable in the test file itself.
+Test PDFs are generated in memory, so the layout under test is readable in the test file
+rather than hidden in a committed binary.
 
-## Privacy
+## Limitations
 
-Uploaded PDFs are written to `./data/uploads` and never leave the machine. Indexing makes no network
-calls. `data/` is gitignored, so a library cannot be committed by accident.
+Honest ones:
 
-Once the embedding and reranking models arrive in Milestone 2, they are downloaded from Hugging Face
-**once** and cached locally; after that first download the system runs fully offline. Document
-content is never part of that request.
+- **No OCR.** Scanned PDFs are rejected with a clear message rather than indexed as empty — a
+  document that silently indexes to nothing looks successful and then answers everything with
+  "no evidence found".
+- **A 3B model is a 3B model.** It is reliable at extraction and citation-following, and
+  visibly weaker at synthesising across four papers at once. `qwen2.5:7b-instruct` is a
+  one-line change on a machine with the RAM for it.
+- **Structured extraction takes ~55s per paper** on this hardware. Cached after the first run,
+  but the first comparison of four papers is a few minutes.
+- **Two of thirty benchmark questions are missed by every retrieval method.**
+- **The evaluation corpus is four papers.** Enough to catch real bugs and rank methods
+  against each other, not enough to claim a general result.
+- **Generation quality is not scored automatically.** Retrieval has Recall@K and MRR;
+  faithfulness was checked by reading answers against the cited pages, not by an LLM judge.
+- Full-width figures in a two-column paper are read after both columns rather than in place.
+  Page numbers are unaffected, so citations stay correct.
+- An intermittent `recursive_mutex` abort can appear at interpreter exit after the test suite
+  finishes — a destructor race between the native extensions. It happens after results are
+  reported and does not affect them.
 
-## Known limitations
+## Not built, on purpose
 
-- **No OCR.** Scanned, image-only PDFs are rejected with a clear message rather than indexed as
-  empty. This is deliberate: a document that silently indexes to nothing looks successful and then
-  answers every question with "no evidence found".
-- **Author blocks on title pages** can be ordered oddly when a paper uses three side-by-side author
-  columns. Body text is unaffected.
-- **Title extraction** falls back to the filename for papers whose first page is dominated by a
-  publisher copyright banner.
-- Full-width figures and tables in a two-column paper are read after both columns rather than at
-  their exact position. Page numbers are unaffected, so citations stay correct.
+Scope was cut deliberately to land a working system rather than a broad, half-finished one:
+Docker, response streaming, conversation history with follow-up query rewriting, and an
+LLM-judged faithfulness score. Each is a real feature; none of them is the difference between
+this working and not working.
 
-## Roadmap
+## Project layout
 
-1. ✅ **Foundation** — repo, backend, frontend, upload, PDF parsing
-2. **Indexing** — chunking, embeddings, Qdrant, BM25
-3. **RAG** — hybrid retrieval, context construction, local LLM via Ollama
-4. **Citations** — page-level grounding, evidence display, "not found" behaviour, reranking
-5. **Research features** — summaries, structured extraction, multi-paper questions, comparison
-6. **Evaluation** — benchmark, Recall@K, MRR, faithfulness, retrieval ablation
-7. **Polish** — Docker, error handling, README, screenshots
+```
+backend/
+  ingestion/   pdf_parser.py, chunking.py
+  retrieval/   embeddings, vector_store, bm25_index, fusion, reranker, engine
+  generation/  llm.py, answering.py, extraction.py
+  api/         documents, search, ask, research
+frontend/      React + Vite
+evaluation/    benchmark.json, retrieval_eval.py
+scripts/       benchmark_embeddings.py
+tests/         70 tests
+```
 
 ## License
 
 Project code: MIT.
 
-Note that **PyMuPDF is AGPL-3.0**, which is the binding constraint if you redistribute this.
-It was chosen anyway because extraction quality on multi-column scientific PDFs is the foundation
-everything else rests on. Swapping it for `pypdf` (BSD) is possible — the parser is isolated behind
+**PyMuPDF is AGPL-3.0**, which is the binding constraint if you redistribute this. It was
+chosen anyway because extraction quality on multi-column scientific PDFs is what everything
+else rests on. Swapping in `pypdf` (BSD) is possible — the parser is isolated behind
 `parse_pdf()` — at a real cost in section detection and reading order.
