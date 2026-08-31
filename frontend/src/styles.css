@@ -168,7 +168,10 @@ body {
   background: var(--panel-2); border-radius: 9px; padding: 14px 16px;
 }
 .answer__body--empty { border-left-color: var(--warn); }
-.answer__text { margin: 0; font-size: 14.5px; line-height: 1.65; }
+.answer__text { font-size: 14.5px; line-height: 1.65; }
+.answer__text p { margin: 0 0 10px; }
+.answer__text p:last-child { margin-bottom: 0; }
+.answer__text strong { color: var(--text); }
 
 .cite {
   display: inline-flex; align-items: center; justify-content: center;

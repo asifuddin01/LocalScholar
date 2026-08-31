@@ -64,6 +64,16 @@ class VectorStore:
         self.dimension = dimension
         self._ensure_collection()
 
+    def recreate(self) -> None:
+        """Drop and rebuild the collection from scratch.
+
+        The repair path for a desynced local index -- see RetrievalEngine.repair.
+        """
+        if self.client.collection_exists(COLLECTION_NAME):
+            self.client.delete_collection(COLLECTION_NAME)
+        self._ensure_collection()
+        logger.info("Vector collection recreated")
+
     def _ensure_collection(self) -> None:
         if not self.client.collection_exists(COLLECTION_NAME):
             self.client.create_collection(
@@ -156,6 +166,33 @@ class VectorStore:
 
     def count(self) -> int:
         return self.client.count(collection_name=COLLECTION_NAME).count
+
+    def healthy(self) -> bool:
+        """Can this collection actually serve a filtered search?
+
+        Qdrant's embedded mode keeps parallel arrays for vectors and deletion
+        masks, and deleting a document can leave them different lengths. The
+        failure surfaces much later as
+        `operands could not be broadcast together with shapes (706,) (707,)`
+        on an unrelated query, so it is worth provoking cheaply at startup
+        rather than in front of a user.
+        """
+        try:
+            self.client.query_points(
+                collection_name=COLLECTION_NAME,
+                query=[0.0] * self.dimension,
+                limit=1,
+                query_filter=models.Filter(
+                    must=[models.FieldCondition(
+                        key="document_id", match=models.MatchAny(any=["__healthcheck__"])
+                    )]
+                ),
+                with_payload=False,
+            )
+            return True
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Vector index failed its health check: %s", exc)
+            return False
 
     def close(self) -> None:
         self.client.close()

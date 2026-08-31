@@ -65,6 +65,34 @@ class RetrievalEngine:
             "Embedded %d chunks in %.1fs", len(chunks), time.perf_counter() - started
         )
 
+    def repair(self) -> int:
+        """Rebuild the vector index from SQLite.
+
+        SQLite is the source of truth for chunk text, so a damaged or
+        out-of-sync vector index is always recoverable -- at the cost of
+        re-embedding, which is why it is not done casually. Returns the number
+        of chunks re-indexed.
+        """
+        chunks = self.catalogue.get_chunks()
+        logger.warning("Repairing vector index: re-embedding %d chunks", len(chunks))
+        self.vector_store.recreate()
+        self.index_chunks(chunks)
+        self.rebuild_bm25()
+        return len(chunks)
+
+    def needs_repair(self) -> bool:
+        """True if the vector index is damaged or has drifted from SQLite."""
+        if not self.vector_store.healthy():
+            return True
+        expected = len(self.catalogue.get_chunks())
+        actual = self.vector_store.count()
+        if expected != actual:
+            logger.warning(
+                "Vector index holds %d points but SQLite has %d chunks", actual, expected
+            )
+            return True
+        return False
+
     def rebuild_bm25(self) -> None:
         """Rebuild the lexical index from SQLite, the durable copy."""
         self.bm25.build(self.catalogue.get_chunks())

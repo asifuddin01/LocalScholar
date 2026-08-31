@@ -34,11 +34,20 @@ logger = logging.getLogger(__name__)
 
 NOT_REPORTED = "Not reported"
 
-# (field name, human label) grouped by the retrieval that finds them.
-FIELD_GROUPS: tuple[tuple[str, str, tuple[tuple[str, str], ...]], ...] = (
+# A schema is a list of groups. Each group is (name, retrieval query, fields),
+# because the query that finds a field is part of the field's definition: you
+# cannot extract "loss function" from passages retrieved for "limitations".
+#
+# Queries deliberately mix vocabularies. "dataset samples participants cohort
+# data collection" finds the data section of an ML paper *and* of a genomics
+# paper; the original ML-only phrasing returned "Not reported" for the dataset
+# of a single-nucleus sequencing study that plainly describes its samples.
+FieldGroup = tuple[str, str, tuple[tuple[str, str], ...]]
+
+FIELD_GROUPS: tuple[FieldGroup, ...] = (
     (
         "identity",
-        "title authors publication year research problem objective and task addressed",
+        "authors affiliation publication year research problem objective aim of this study",
         (
             ("authors", "Authors"),
             ("year", "Year"),
@@ -47,11 +56,17 @@ FIELD_GROUPS: tuple[tuple[str, str, tuple[tuple[str, str], ...]], ...] = (
         ),
     ),
     (
-        "approach",
-        "dataset name number of samples size model architecture method training procedure loss function",
+        "data",
+        "dataset data samples participants cells cohort size number of samples collected data collection",
         (
             ("dataset", "Dataset"),
             ("dataset_size", "Dataset size"),
+        ),
+    ),
+    (
+        "approach",
+        "method methods approach model architecture algorithm pipeline analysis training procedure loss function",
+        (
             ("model_architecture", "Model / architecture"),
             ("method", "Method"),
             ("training_procedure", "Training procedure"),
@@ -60,10 +75,48 @@ FIELD_GROUPS: tuple[tuple[str, str, tuple[tuple[str, str], ...]], ...] = (
     ),
     (
         "findings",
-        "evaluation metrics main results baselines limitations future work",
+        "results findings evaluation metrics performance accuracy we found we observed",
         (
             ("evaluation_metrics", "Evaluation metrics"),
             ("main_results", "Main results"),
+        ),
+    ),
+    (
+        "reflection",
+        "limitations caveats future work further studies remain to be determined",
+        (
+            ("limitations", "Limitations"),
+            ("future_work", "Future work"),
+        ),
+    ),
+)
+
+# The summary schema produces prose rather than short values. Same machinery,
+# same citation verification -- a summary sentence nothing supports is dropped
+# exactly like an invented dataset name.
+SUMMARY_GROUPS: tuple[FieldGroup, ...] = (
+    (
+        "problem",
+        "research problem motivation objective contribution novelty of this work",
+        (
+            ("research_problem", "Research problem"),
+            ("contribution", "Main contribution"),
+        ),
+    ),
+    (
+        "approach",
+        "dataset data samples methods approach model experimental setup analysis pipeline",
+        (
+            ("data", "Data"),
+            ("methodology", "Methodology"),
+            ("experimental_setup", "Experimental setup"),
+        ),
+    ),
+    (
+        "outcome",
+        "results findings performance limitations caveats future work",
+        (
+            ("results", "Results"),
             ("limitations", "Limitations"),
             ("future_work", "Future work"),
         ),
@@ -78,6 +131,20 @@ FIELD_GROUPS: tuple[tuple[str, str, tuple[tuple[str, str], ...]], ...] = (
 ALL_FIELDS: tuple[tuple[str, str], ...] = (("title", "Title"),) + tuple(
     pair for _, _, pairs in FIELD_GROUPS for pair in pairs
 )
+
+SUMMARY_SYSTEM_PROMPT = f"""You summarise scientific papers.
+
+You will be given numbered excerpts from ONE paper and a list of summary
+sections. Reply with a single JSON object mapping each section name to a
+string of one to three complete sentences.
+
+Rules:
+- Use ONLY the excerpts. Never use outside knowledge.
+- If the excerpts do not cover a section, use exactly "{NOT_REPORTED}".
+- Write plain prose. Do not add citation markers; they are attached
+  automatically.
+- Prefer the paper's own terminology and exact numbers.
+- No markdown, no commentary, no code fences."""
 
 SYSTEM_PROMPT = f"""You extract structured facts from scientific papers.
 
@@ -133,6 +200,32 @@ def _content_tokens(text: str) -> set[str]:
         for token in re.findall(r"[a-z0-9.]+", normalised)
         if len(token.strip(".")) >= 3 and token.strip(".") not in _STOPWORDS
     }
+
+
+_SENTENCE_SPLIT_RE = re.compile(r"(?<=[.!?])\s+")
+
+
+def find_supporting_sources_for_prose(
+    text: str, sources: list[Source], max_citations: int = 3
+) -> list[int]:
+    """Verify a multi-sentence passage sentence by sentence.
+
+    A summary paragraph is supported by several different excerpts, so scoring
+    the whole paragraph as one bag of tokens dilutes every sentence and finds
+    nothing. Each sentence is checked independently and the supporting excerpts
+    are unioned.
+
+    A paragraph where no sentence is supported returns nothing, which is what
+    makes an unsupported summary indistinguishable from an unsupported fact.
+    """
+    found: list[int] = []
+    for sentence in _SENTENCE_SPLIT_RE.split(text):
+        if len(sentence.split()) < 4:
+            continue
+        for index in find_supporting_sources(sentence, sources):
+            if index not in found:
+                found.append(index)
+    return found[:max_citations]
 
 
 def find_supporting_sources(value: str, sources: list[Source]) -> list[int]:
@@ -235,27 +328,44 @@ class ExtractionService:
         engine: RetrievalEngine,
         llm: LLMProvider,
         char_budget: int = 6000,
-        per_group_k: int = 6,
+        # More evidence per group beats sharper evidence per group here: the
+        # model is choosing what to report from what it is shown, so breadth of
+        # coverage matters more than the ordering within it.
+        per_group_k: int = 8,
     ) -> None:
         self.engine = engine
         self.llm = llm
         self.char_budget = char_budget
         self.per_group_k = per_group_k
 
-    def extract(self, document_id: str, filename: str) -> PaperExtraction:
+    def extract(
+        self,
+        document_id: str,
+        filename: str,
+        groups: tuple[FieldGroup, ...] = FIELD_GROUPS,
+        system_prompt: str = SYSTEM_PROMPT,
+        prose: bool = False,
+    ) -> PaperExtraction:
+        """Run a schema against one paper.
+
+        `prose=True` switches to sentence-level citation verification, which is
+        what summary sections need; short factual values are verified whole.
+        """
         all_sources: list[Source] = []
         results: list[ExtractedField] = []
         source_offset = 0
 
-        for _, query, fields in FIELD_GROUPS:
+        for _, query, fields in groups:
             chunks = self.engine.hybrid_search(
                 query,
                 top_k=self.per_group_k,
                 document_ids=[document_id],
-                # ~2.5s per group on CPU, for candidates that are already scoped
-                # to one paper and one topic. Not worth it here; question
-                # answering, where precision at rank 1 decides the answer,
-                # still uses it.
+                # Measured both ways on a four-paper corpus. Reranking here made
+                # extraction 2-3x slower and, net, slightly *worse*: 34 of 60
+                # fields filled against 41 without it. It helped one paper and
+                # hurt two, which is within the run-to-run variance of a 3B
+                # model. Question answering still reranks, because there
+                # precision at rank 1 decides the answer outright.
                 use_reranker=False,
             )
             sources = build_sources(chunks, self.char_budget)
@@ -264,7 +374,9 @@ class ExtractionService:
             for source in sources:
                 source.index += source_offset
 
-            group_fields = self._extract_group(query, fields, sources)
+            group_fields = self._extract_group(
+                query, fields, sources, system_prompt=system_prompt, prose=prose
+            )
             results.extend(group_fields)
             all_sources.extend(sources)
             source_offset += len(sources)
@@ -275,22 +387,31 @@ class ExtractionService:
         )
 
     def _extract_group(
-        self, query: str, fields: tuple[tuple[str, str], ...], sources: list[Source]
+        self,
+        query: str,
+        fields: tuple[tuple[str, str], ...],
+        sources: list[Source],
+        system_prompt: str = SYSTEM_PROMPT,
+        prose: bool = False,
     ) -> list[ExtractedField]:
         blank = [ExtractedField(name=n, label=l, value=NOT_REPORTED) for n, l in fields]
         if not sources:
             return blank
 
         field_list = "\n".join(f'- "{name}": {label}' for name, label in fields)
+        instruction = (
+            "Write these summary sections as JSON:" if prose
+            else "Extract these fields as JSON:"
+        )
         prompt = (
             f"Excerpts:\n\n{format_context(sources)}\n\n"
-            f"Extract these fields as JSON:\n{field_list}\n\n"
+            f"{instruction}\n{field_list}\n\n"
             f"JSON object only."
         )
 
         try:
             payload = parse_json_object(
-                self.llm.complete(SYSTEM_PROMPT, prompt, json_mode=True)
+                self.llm.complete(system_prompt, prompt, json_mode=True)
             )
         except (LLMError, ValueError, json.JSONDecodeError) as exc:
             # One bad group must not lose the other two. The fields come back
@@ -312,7 +433,10 @@ class ExtractionService:
 
             # Citations are computed, not taken on trust: an excerpt only counts
             # if it actually contains the value the model produced.
-            citations = find_supporting_sources(value, sources)
+            citations = (
+                find_supporting_sources_for_prose(value, sources) if prose
+                else find_supporting_sources(value, sources)
+            )
 
             # A value no excerpt supports did not come from the paper. That is
             # how the invented title and authors were caught, and it is the

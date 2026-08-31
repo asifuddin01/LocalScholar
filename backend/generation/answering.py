@@ -32,6 +32,32 @@ NOT_FOUND_MESSAGE = (
 
 _CITATION_RE = re.compile(r"\[(\d{1,2})\]")
 
+# "Summarise this" is not a question, and treating it as one fails twice over:
+# the phrase itself is a useless retrieval query, and the answering prompt
+# demands a citation per factual sentence, which prose summaries do not carry.
+# Requests like these are routed to the summary pipeline instead.
+_SUMMARY_INTENT_RE = re.compile(
+    r"""
+      \bsummari[sz]e\b                       # the verb: "summarise this"
+    | \bsummari[sz]ation\b
+    | \btl;?dr\b
+    | \boverview\b
+    | \bkey\s+points\b
+    | \bmain\s+points\b
+    | \bexplain\s+this\s+paper\b
+    | \bwhat(?:'s|\s+is|\s+are)\s+(?:this|these|the)\s+paper
+      # The bare noun "summary" counts, but not when it names something in the
+      # paper -- "how large was the summary table?" is an ordinary question.
+    | \bsummary\b(?!\s+(?:table|statistic|stats|figure|fig|row|column|section|chart))
+    """,
+    re.IGNORECASE | re.VERBOSE,
+)
+
+
+def wants_summary(question: str) -> bool:
+    """Does this read as a request to summarise rather than a question?"""
+    return bool(_SUMMARY_INTENT_RE.search(question))
+
 SYSTEM_PROMPT = f"""You are a careful research assistant. You answer questions about \
 scientific papers using ONLY the numbered sources provided to you.
 
@@ -181,15 +207,29 @@ class AnswerService:
 
         cleaned, cited = extract_citations(raw, {s.index for s in sources})
 
-        # An answer with no surviving citation is ungrounded by definition:
-        # either the model ignored the format, or every citation it produced
-        # was invented. Either way it must not be presented as evidence-backed.
+        # No surviving citation does not automatically mean no evidence. Small
+        # models routinely write a perfectly well-grounded answer and simply
+        # forget the [n] markers -- rejecting those outright reported "no
+        # evidence" for questions the papers plainly answered.
+        #
+        # So before giving up, check the answer against the sources the same way
+        # extracted values are checked: sentence by sentence, by content
+        # overlap. If the text really is supported, the citations are computed
+        # and attached. If nothing supports it, it is rejected as before.
         if not cited:
-            logger.warning("Model produced an answer with no valid citations; rejecting.")
-            return Answer(
-                answer=NOT_FOUND_MESSAGE, sources=sources, cited_indexes=[],
-                found=False, model=self.llm.model,
-            )
+            from backend.generation.extraction import find_supporting_sources_for_prose
+
+            computed = find_supporting_sources_for_prose(cleaned, sources)
+            if computed:
+                logger.info("Answer had no markers; attached %d verified citation(s)", len(computed))
+                cited = computed
+                cleaned = f"{cleaned} " + "".join(f"[{i}]" for i in computed)
+            else:
+                logger.warning("Answer is unsupported by any retrieved source; rejecting.")
+                return Answer(
+                    answer=NOT_FOUND_MESSAGE, sources=sources, cited_indexes=[],
+                    found=False, model=self.llm.model,
+                )
 
         return Answer(
             answer=cleaned, sources=sources, cited_indexes=cited,

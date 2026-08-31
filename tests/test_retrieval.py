@@ -197,3 +197,50 @@ def test_extracted_values_are_verified_against_their_sources():
     assert find_supporting_sources("AdamW", sources) == [2]
     # The failure mode this exists to catch.
     assert find_supporting_sources("A quantum blockchain for cats", sources) == []
+
+
+# --- request intent ---------------------------------------------------------
+
+@pytest.mark.parametrize("text", [
+    "summarise this", "Summarize this paper", "give me an overview", "tl;dr",
+    "what is this paper about?", "key points", "summary of this paper",
+])
+def test_summary_requests_are_routed_away_from_question_answering(text):
+    """Answering "summarise this" as a question returned "no evidence"."""
+    from backend.generation.answering import wants_summary
+
+    assert wants_summary(text)
+
+
+@pytest.mark.parametrize("text", [
+    "What dataset did they use?",
+    "What optimizer was used?",
+    "How large was the summary table?",       # "summary" naming a real table
+    "What does the summary statistics table show?",
+    "What were the main results?",
+])
+def test_ordinary_questions_are_not_treated_as_summary_requests(text):
+    from backend.generation.answering import wants_summary
+
+    assert not wants_summary(text)
+
+
+def test_prose_citations_are_verified_sentence_by_sentence():
+    """A summary paragraph draws on several excerpts, not one."""
+    from backend.generation.answering import Source
+    from backend.generation.extraction import find_supporting_sources_for_prose
+
+    def source(index, text):
+        return Source(index, "c", "d", "f.pdf", None, 1, None, text, 1.0)
+
+    sources = [
+        source(1, "The dataset includes 13,599 fruit images split into train and test."),
+        source(2, "CNN outperformed all models, achieving an accuracy of 96 percent."),
+        source(3, "Unrelated text about federated learning on mobile edge networks."),
+    ]
+    supported = find_supporting_sources_for_prose(
+        "The study used 13,599 fruit images. The CNN achieved an accuracy of 96 percent.",
+        sources,
+    )
+    assert supported == [1, 2]
+    assert find_supporting_sources_for_prose("Quantum blockchain for cats.", sources) == []

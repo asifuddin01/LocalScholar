@@ -29,6 +29,8 @@ intellectual property, and pasting them into a hosted API is frequently not an o
 - **Grounded answers** — every claim carries a `[n]` citation you can click through to the
   supporting passage, with paper, page and section
 - **Refuses to guess** — if the papers don't support an answer, it says so
+- **Cited summaries** — ask "summarise this" and get a structured summary (problem,
+  contribution, data, methodology, results, limitations, future work) with citations
 - **Structured extraction** — dataset, size, architecture, training, metrics, results,
   limitations, future work, each with its own citations
 - **Paper comparison** — the same extraction rendered as a side-by-side table
@@ -121,7 +123,12 @@ worth it: it means every chunk has exactly one page number. A chunk straddling p
 can only ever produce a vague citation, and a vague citation is one nobody can check.
 
 **SQLite + embedded Qdrant, no services.** A vector database you have to start is a vector
-database that makes `git clone && run` fail.
+database that makes `git clone && run` fail. The trade-off is real, though: embedded Qdrant
+keeps parallel arrays for vectors and deletion masks, and deleting a document can leave them
+out of sync — which surfaces much later as `operands could not be broadcast together with
+shapes (706,) (707,)` on an unrelated search. Because SQLite holds every chunk's text, this is
+always recoverable, so the index is health-checked at every startup and rebuilt from SQLite if
+it has drifted or is damaged.
 
 ## Evaluation
 
@@ -140,6 +147,8 @@ Reproduce with:
 ```bash
 .venv/bin/python evaluation/retrieval_eval.py
 ```
+
+(Stop the API first — embedded Qdrant allows one process at a time.)
 
 ### Retrieval ablation
 
@@ -237,6 +246,30 @@ Prediction"*. It cited nothing, because nothing in the paper said it, and the ru
 three fabricated fields automatically. The title is now read off page one by the parser
 instead: never ask a model for something you already know.
 
+### "Summarise this" is not a question
+
+Asking the app to summarise a paper originally returned *"I could not find sufficient
+evidence"* — for a paper sitting right there, with six relevant passages retrieved. Two
+separate causes, both worth knowing about:
+
+1. The answering prompt demands a citation on every factual sentence. A prose summary does
+   not carry `[n]` markers, so the "reject anything uncited" rule threw away a perfectly good
+   summary.
+2. "Summarise this" is a useless retrieval query on its own — it names nothing to retrieve.
+
+Neither is fixed by prompt tweaking. Summary requests are now **detected and routed** to a
+separate pipeline that retrieves per summary section ("research problem motivation
+contribution", "results findings limitations") and verifies citations sentence by sentence.
+
+The rejection rule was also softened in the right way rather than removed: when an answer has
+no citation markers, it is now checked against the retrieved sources, and computed citations
+are attached if the text really is supported. Only genuinely unsupported answers are rejected.
+That turned a class of false "no evidence" results into correct, cited answers without
+weakening the guarantee.
+
+Intent detection is deliberately narrow — "how large was the summary table?" is an ordinary
+question, not a request to summarise, and there are tests for exactly that distinction.
+
 ### Citations are computed, not self-reported
 
 For structured extraction the rule goes further, and this was the most useful thing the build
@@ -321,7 +354,8 @@ one promise this project makes.
 | Retrieval + reranking | ~2.5 s |
 | Answer generation (model warm) | ~2.2 s |
 | First question after startup | ~30 s (model load) |
-| Structured extraction, one paper | ~27–50 s (cached afterwards) |
+| Structured extraction, one paper | ~50–90 s (cached afterwards) |
+| Paper summary | ~60 s (cached afterwards) |
 
 The model is warmed at startup and held resident via `keep_alive`, because a cold call costs
 ~32s of loading against ~2.2s warm for identical work.
@@ -364,6 +398,15 @@ Honest ones:
   faithfulness was checked by reading answers against the cited pages, not by an LLM judge.
 - Full-width figures in a two-column paper are read after both columns rather than in place.
   Page numbers are unaffected, so citations stay correct.
+- **Structured extraction fill rate varies by field and by paper**, and the ML-shaped schema
+  ("loss function", "training procedure") genuinely does not apply to, say, a genomics paper —
+  those cells correctly read "Not reported". Measured on four papers, roughly 34–41 of 60
+  cells are filled depending on configuration, and the run-to-run variance of a 3B model is
+  wide enough that small differences between configurations are noise. Reranking the
+  extraction retrieval was tried and made it slower *and* slightly worse.
+- **The evaluation script cannot run while the server is running.** Qdrant's embedded mode
+  locks its storage directory to one process, so stop the API first. That is the cost of
+  having no separate database service to start.
 - An intermittent `recursive_mutex` abort can appear at interpreter exit after the test suite
   finishes — a destructor race between the native extensions. It happens after results are
   reported and does not affect them.

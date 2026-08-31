@@ -70,3 +70,7 @@ export function compare(documentIds) {
     body: JSON.stringify({ document_ids: documentIds }),
   })
 }
+
+export function paperSummary(id, refresh = false) {
+  return request(`/api/documents/${id}/summary${refresh ? '?refresh=true' : ''}`)
+}

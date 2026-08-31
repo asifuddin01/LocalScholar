@@ -58,6 +58,13 @@ CREATE TABLE IF NOT EXISTS extractions (
     created_at   TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS summaries (
+    document_id  TEXT PRIMARY KEY REFERENCES documents(id) ON DELETE CASCADE,
+    model        TEXT NOT NULL,
+    payload      TEXT NOT NULL,
+    created_at   TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS pages (
     document_id  TEXT NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
     page_number  INTEGER NOT NULL,
@@ -205,6 +212,24 @@ class Catalogue:
                  datetime.now(timezone.utc).isoformat()),
             )
 
+    def get_summary(self, document_id: str) -> dict | None:
+        with self._connect() as conn:
+            row = conn.execute(
+                "SELECT payload FROM summaries WHERE document_id = ?", (document_id,)
+            ).fetchone()
+        return json.loads(row["payload"]) if row else None
+
+    def save_summary(self, document_id: str, model: str, payload: dict) -> None:
+        with self._write_lock, self._connect() as conn:
+            conn.execute(
+                "INSERT INTO summaries (document_id, model, payload, created_at) "
+                "VALUES (?, ?, ?, ?) ON CONFLICT(document_id) DO UPDATE SET "
+                "model = excluded.model, payload = excluded.payload, "
+                "created_at = excluded.created_at",
+                (document_id, model, json.dumps(payload),
+                 datetime.now(timezone.utc).isoformat()),
+            )
+
     def get_pages(self, document_id: str) -> list[tuple[int, str]]:
         with self._connect() as conn:
             rows = conn.execute(
@@ -261,6 +286,7 @@ class Catalogue:
 
     def replace_chunks(self, document_id: str, chunks: list["Chunk"]) -> None:
         with self._write_lock, self._connect() as conn:
+            conn.execute("DELETE FROM summaries WHERE document_id = ?", (document_id,))
             conn.execute("DELETE FROM extractions WHERE document_id = ?", (document_id,))
             conn.execute("DELETE FROM chunks WHERE document_id = ?", (document_id,))
             conn.executemany(

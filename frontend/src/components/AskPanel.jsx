@@ -1,29 +1,48 @@
 import { useEffect, useState } from 'react'
 import * as api from '../api.js'
 
-// Renders [1] / [2] in the answer as clickable chips that jump to the matching
-// source card. Citations are the point of this product, so they have to be
-// followable, not just printed.
+// Renders the answer: [1] markers become clickable chips that jump to the
+// matching source card, **bold** section labels are honoured (summaries come
+// back with them), and blank lines become paragraphs. Citations are the point
+// of this product, so they have to be followable, not just printed.
+function renderInline(text, onJump, keyPrefix) {
+  return text.split(/(\[\d{1,2}\]|\*\*[^*]+\*\*)/g).map((part, index) => {
+    const key = `${keyPrefix}-${index}`
+    const citation = /^\[(\d{1,2})\]$/.exec(part)
+    if (citation) {
+      const number = Number(citation[1])
+      return (
+        <button
+          key={key}
+          className="cite"
+          onClick={() => onJump(number)}
+          title={`Jump to source ${number}`}
+        >
+          {number}
+        </button>
+      )
+    }
+    const bold = /^\*\*([^*]+)\*\*$/.exec(part)
+    if (bold) return <strong key={key}>{bold[1]}</strong>
+    return <span key={key}>{part}</span>
+  })
+}
+
 function AnswerText({ text, onJump }) {
-  const parts = text.split(/(\[\d{1,2}\])/g)
+  const blocks = text.split(/\n{2,}/)
   return (
-    <p className="answer__text">
-      {parts.map((part, index) => {
-        const match = /^\[(\d{1,2})\]$/.exec(part)
-        if (!match) return <span key={index}>{part}</span>
-        const number = Number(match[1])
-        return (
-          <button
-            key={index}
-            className="cite"
-            onClick={() => onJump(number)}
-            title={`Jump to source ${number}`}
-          >
-            {number}
-          </button>
-        )
-      })}
-    </p>
+    <div className="answer__text">
+      {blocks.map((block, blockIndex) => (
+        <p key={blockIndex}>
+          {block.split('\n').map((line, lineIndex, lines) => (
+            <span key={lineIndex}>
+              {renderInline(line, onJump, `${blockIndex}-${lineIndex}`)}
+              {lineIndex < lines.length - 1 && <br />}
+            </span>
+          ))}
+        </p>
+      ))}
+    </div>
   )
 }
 
@@ -147,7 +166,7 @@ export default function AskPanel({ documents, selectedIds, onToggleDocument }) {
             {result.found ? (
               <AnswerText text={result.answer} onJump={jumpTo} />
             ) : (
-              <p className="answer__text">{result.answer}</p>
+              <div className="answer__text"><p>{result.answer}</p></div>
             )}
           </div>
 

@@ -16,7 +16,11 @@ from backend.db import STATUS_READY, Catalogue, DocumentRecord
 from backend.ingestion.chunking import chunk_document
 from backend.ingestion.pdf_parser import PDFParseError, parse_pdf
 from backend.generation.answering import AnswerService
-from backend.generation.extraction import ExtractionService
+from backend.generation.extraction import (
+    SUMMARY_GROUPS,
+    SUMMARY_SYSTEM_PROMPT,
+    ExtractionService,
+)
 from backend.generation.llm import create_llm_provider
 from backend.retrieval.engine import RetrievalEngine
 
@@ -51,6 +55,16 @@ class LibraryService:
         looking searchable while matching nothing.
         """
         self.engine.rebuild_bm25()
+
+        # A damaged vector index is silently fatal: searches either fail with a
+        # numpy broadcast error or quietly return nothing. Checked every boot,
+        # and repaired from SQLite, which always has the text.
+        if self.engine.needs_repair():
+            try:
+                self.engine.repair()
+            except Exception:  # noqa: BLE001 - never block startup on this
+                logger.exception("Vector index repair failed")
+
         stale = [
             record.id
             for record in self.catalogue.list_documents()
@@ -187,6 +201,30 @@ class LibraryService:
             "value": record.title or record.filename, "citations": [],
         })
         self.catalogue.save_extraction(document_id, payload.get("model", ""), payload)
+        return payload
+
+    def summarize(self, document_id: str, refresh: bool = False) -> dict | None:
+        """A structured, cited summary of one paper.
+
+        Runs the same schema-driven pipeline as the details view, with the
+        summary schema and prose-level citation verification. Cached, because
+        it costs three model calls.
+        """
+        record = self.catalogue.get_document(document_id)
+        if record is None:
+            return None
+        if not refresh:
+            cached = self.catalogue.get_summary(document_id)
+            if cached is not None:
+                return cached
+
+        summary = self.extractions.extract(
+            document_id, record.filename,
+            groups=SUMMARY_GROUPS, system_prompt=SUMMARY_SYSTEM_PROMPT, prose=True,
+        )
+        payload = summary.to_dict()
+        payload["title"] = record.title or record.filename
+        self.catalogue.save_summary(document_id, payload.get("model", ""), payload)
         return payload
 
     def close(self) -> None:

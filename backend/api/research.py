@@ -42,6 +42,19 @@ def paper_details(request: Request, document_id: str, refresh: bool = False) -> 
     return payload
 
 
+@router.get("/documents/{document_id}/summary")
+def paper_summary(request: Request, document_id: str, refresh: bool = False) -> dict:
+    library = get_library(request)
+    available, detail = library.llm.available()
+    if not available:
+        raise HTTPException(status_code=503, detail=detail)
+
+    payload = library.summarize(document_id, refresh=refresh)
+    if payload is None:
+        raise HTTPException(status_code=404, detail="Document not found")
+    return payload
+
+
 @router.post("/compare")
 def compare(request: Request, payload: dict) -> dict:
     document_ids = payload.get("document_ids") or []
