@@ -5,7 +5,12 @@ no account. Ask questions across your PDF library and get answers with page-leve
 you can check.
 
 ![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue)
+![Node](https://img.shields.io/badge/node-18%2B-brightgreen)
 ![License](https://img.shields.io/badge/code-MIT-green)
+![Tests](https://img.shields.io/badge/tests-88%20passing-success)
+
+**[→ User Guide](USER_GUIDE.md)** — installation, day-to-day usage, configuration and
+troubleshooting. This README covers what the system does and why it is built this way.
 
 ---
 
