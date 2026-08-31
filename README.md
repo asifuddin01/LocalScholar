@@ -122,6 +122,12 @@ and also the slowest stage (~2.5s), so it is one config flag away from being swi
 worth it: it means every chunk has exactly one page number. A chunk straddling pages 4 and 5
 can only ever produce a vague citation, and a vague citation is one nobody can check.
 
+**Nothing is left half-finished.** Parsing and indexing run in background tasks so uploads stay
+responsive, and no background task survives a restart. On every boot, documents still marked
+"processing" are treated as orphaned and re-queued, and documents marked ready but holding no
+chunks are re-indexed. Without this, restarting the server mid-upload left a paper showing
+"Processing…" forever with nothing working on it.
+
 **SQLite + embedded Qdrant, no services.** A vector database you have to start is a vector
 database that makes `git clone && run` fail. The trade-off is real, though: embedded Qdrant
 keeps parallel arrays for vectors and deletion masks, and deleting a document can leave them

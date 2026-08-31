@@ -116,3 +116,38 @@ def test_delete_removes_the_document(client, paper_pdf_bytes):
     assert client.delete(f"/api/documents/{document_id}").status_code == 204
     assert client.get("/api/documents").json() == []
     assert client.delete(f"/api/documents/{document_id}").status_code == 404
+
+
+def test_documents_orphaned_by_a_restart_are_re_queued(tmp_path, monkeypatch):
+    """A document stuck at "processing" is orphaned, not in progress.
+
+    Parsing runs in a FastAPI background task, and no background task survives
+    a process restart. Without this recovery, restarting the server while a
+    paper was indexing left it showing "Processing…" forever, with nothing
+    working on it. Observed on a real upload.
+    """
+    from backend.config import load_config
+    from backend.db import STATUS_PROCESSING, Catalogue
+    from tests.conftest import HashingEmbeddingProvider
+
+    monkeypatch.setenv("LOCALSCHOLAR_DATA_DIR", str(tmp_path / "data"))
+    monkeypatch.setattr(
+        "backend.retrieval.engine.create_embedding_provider",
+        lambda **_: HashingEmbeddingProvider(),
+    )
+    from backend.services.library import LibraryService
+
+    config = load_config()
+    library = LibraryService(config)
+    record, _ = library.ingest_upload("paper.pdf", build_paper_pdf())
+    assert record.status == STATUS_PROCESSING      # never processed: simulates the crash
+    library.close()
+
+    # A fresh process starts up and finds the orphan.
+    recovered = LibraryService(config)
+    try:
+        assert record.id in recovered.start()
+        recovered.process_document(record.id)
+        assert recovered.get_document(record.id).chunk_count > 0
+    finally:
+        recovered.close()

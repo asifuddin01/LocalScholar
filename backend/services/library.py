@@ -12,7 +12,7 @@ import logging
 from pathlib import Path
 
 from backend.config import Config
-from backend.db import STATUS_READY, Catalogue, DocumentRecord
+from backend.db import STATUS_PROCESSING, STATUS_READY, Catalogue, DocumentRecord
 from backend.ingestion.chunking import chunk_document
 from backend.ingestion.pdf_parser import PDFParseError, parse_pdf
 from backend.generation.answering import AnswerService
@@ -49,10 +49,15 @@ class LibraryService:
         """Restore in-memory state at startup.
 
         The BM25 index lives in memory, so it is rebuilt from SQLite on every
-        boot. Any document marked ready but holding no chunks was interrupted
-        mid-index (a crash, or a library created before indexing existed), so
-        it is queued to be processed again rather than sitting in the library
-        looking searchable while matching nothing.
+        boot, and two kinds of half-finished document are re-queued:
+
+        * **Marked ready but holding no chunks** -- interrupted between parsing
+          and indexing. It would sit in the library looking searchable while
+          matching nothing.
+        * **Still marked processing** -- parsing runs in a background task, and
+          no background task survives a restart. Any document in this state at
+          startup is therefore orphaned by definition: nothing is working on
+          it, and without this it would show "Processing..." forever.
         """
         self.engine.rebuild_bm25()
 
@@ -68,7 +73,8 @@ class LibraryService:
         stale = [
             record.id
             for record in self.catalogue.list_documents()
-            if record.status == STATUS_READY and record.chunk_count == 0
+            if (record.status == STATUS_READY and record.chunk_count == 0)
+            or record.status == STATUS_PROCESSING
         ]
         if stale:
             logger.info("Re-indexing %d document(s) with no chunks", len(stale))
