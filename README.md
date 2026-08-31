@@ -132,10 +132,15 @@ it has drifted or is damaged.
 
 ## Evaluation
 
-30 hand-written questions over four real papers (a Springer/LNCS retinal-imaging paper, an
-IEEE food-expiry paper, a 34-page IEEE federated-learning survey, and a 43-page Nature
-CellOracle paper) — 705 chunks in total. Questions cover datasets, methods, results,
-limitations, extraction and bare terminology.
+30 hand-written questions over real papers: a Springer/LNCS retinal-imaging paper, an IEEE
+food-expiry paper, a 34-page IEEE federated-learning survey, and a 43-page Nature CellOracle
+paper. Questions cover datasets, methods, results, limitations, extraction and bare
+terminology.
+
+The numbers below were measured against a **1053-chunk index containing those four papers plus
+two unrelated single-cell genomics papers**. The extra papers answer none of the questions;
+they are there as distractors, which makes this a harder and more realistic test than
+measuring against a library containing only the answers.
 
 A chunk counts as relevant only if it comes from the expected paper **and** contains the
 question's evidence keywords. The harness validates every question against the live index
@@ -154,22 +159,22 @@ Reproduce with:
 
 | Method | Recall@1 | Recall@3 | Recall@5 | Recall@10 | MRR | Median latency |
 |---|---|---|---|---|---|---|
-| BM25 only | 0.533 | 0.767 | 0.833 | 0.867 | 0.659 | 1 ms |
-| Dense only | 0.733 | 0.833 | 0.867 | 0.900 | 0.795 | 7 ms |
-| Hybrid (RRF) | 0.700 | 0.900 | 0.900 | 0.933 | 0.798 | 10 ms |
-| **Hybrid + reranker** | **0.800** | **0.900** | **0.933** | **0.933** | **0.857** | 2517 ms |
+| BM25 only | 0.567 | 0.733 | 0.833 | 0.900 | 0.672 | 2 ms |
+| Dense only | 0.733 | 0.833 | 0.867 | 0.900 | 0.795 | 6 ms |
+| Hybrid (RRF) | 0.633 | 0.900 | 0.900 | 0.933 | 0.759 | 9 ms |
+| **Hybrid + reranker** | **0.767** | **0.900** | **0.933** | **0.933** | **0.840** | 1589 ms |
 
 Measured, not estimated. Two things in that table are worth reading carefully:
 
-- **Hybrid's Recall@1 (0.700) is *below* dense alone (0.733).** Fusion clearly helps deeper in
-  the ranking — Recall@3 goes 0.833 → 0.900 — but mixing in BM25's ordering can knock the
-  single best chunk off the top spot. This is exactly the gap the reranker closes, taking
-  Recall@1 to 0.800. Reporting the hybrid row without the reranker row would have made hybrid
-  look like a regression; reporting only the final number would have hidden why the reranker
-  is there.
-- **The reranker costs ~250x the latency of fusion** for +0.06 MRR. On this hardware that is
-  ~2.5s per question against ~2.2s for the model itself. Worth it here, and `reranker.enabled:
-  false` for anyone who disagrees.
+- **Hybrid's Recall@1 (0.633) is *below* dense alone (0.733).** Fusion clearly helps deeper in
+  the ranking — Recall@3 goes 0.833 → 0.900, Recall@10 reaches 0.933 — but mixing in BM25's
+  ordering can knock the single best chunk off the top spot. This is exactly the gap the
+  reranker closes, taking Recall@1 to 0.767. Reporting the hybrid row without the reranker row
+  would have made hybrid look like a regression; reporting only the final number would have
+  hidden why the reranker is there.
+- **The reranker costs ~175x the latency of fusion** for +0.08 MRR. On this hardware that is
+  ~1.6s per question against ~2.2s for the model itself. Worth it here, and
+  `reranker.enabled: false` for anyone who disagrees.
 
 Two questions are missed by every method (`d5`, `e6`), which is a fair result rather than a
 tuning failure: both ask about a concept the paper expresses in wording no retriever matches.
@@ -398,12 +403,12 @@ Honest ones:
   faithfulness was checked by reading answers against the cited pages, not by an LLM judge.
 - Full-width figures in a two-column paper are read after both columns rather than in place.
   Page numbers are unaffected, so citations stay correct.
-- **Structured extraction fill rate varies by field and by paper**, and the ML-shaped schema
-  ("loss function", "training procedure") genuinely does not apply to, say, a genomics paper —
-  those cells correctly read "Not reported". Measured on four papers, roughly 34–41 of 60
-  cells are filled depending on configuration, and the run-to-run variance of a 3B model is
-  wide enough that small differences between configurations are noise. Reranking the
-  extraction retrieval was tried and made it slower *and* slightly worse.
+- **Structured extraction fill rate varies by field and by paper.** The ML-shaped schema
+  ("loss function", "training procedure") genuinely does not apply to a genomics paper, and
+  those cells correctly read "Not reported". Across six papers, 55 of 90 fields are populated,
+  every one of them with a verified citation. The run-to-run variance of a 3B model is wide
+  enough that small differences between configurations are noise — reranking the extraction
+  retrieval was tried and made it slower *and*, net, slightly worse.
 - **The evaluation script cannot run while the server is running.** Qdrant's embedded mode
   locks its storage directory to one process, so stop the API first. That is the cost of
   having no separate database service to start.
