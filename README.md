@@ -47,7 +47,7 @@ Requires **Python 3.11 or 3.12** (not 3.13+; the ONNX wheels lag), **Node 18+**,
 **[Ollama](https://ollama.com)**.
 
 ```bash
-git clone <repo-url> && cd LocalScholar
+git clone https://github.com/asifuddin01/LocalScholar.git && cd LocalScholar
 python3.12 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
 npm --prefix frontend install
 ```
