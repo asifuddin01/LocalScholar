@@ -244,3 +244,35 @@ def test_prose_citations_are_verified_sentence_by_sentence():
     )
     assert supported == [1, 2]
     assert find_supporting_sources_for_prose("Quantum blockchain for cats.", sources) == []
+
+
+@pytest.mark.parametrize("text", [
+    "give comparison of this 2 papers", "compare these papers",
+    "what are the differences between them", "how do they differ",
+    "Paper A vs Paper B", "contrast the methods", "compare paper A to paper B",
+])
+def test_comparison_requests_are_detected(text):
+    """Routed through question answering, "compare these papers" described the
+    comparisons each paper makes internally instead of comparing the papers."""
+    from backend.generation.answering import wants_comparison
+
+    assert wants_comparison(text)
+
+
+@pytest.mark.parametrize("text", [
+    "What baselines did they compare against?",   # about one paper's experiments
+    "What model did they compare to?",
+    "What dataset did they use?",
+    "summarise this",
+])
+def test_content_questions_are_not_comparison_requests(text):
+    from backend.generation.answering import wants_comparison
+
+    assert not wants_comparison(text)
+
+
+def test_summary_and_comparison_intents_do_not_overlap():
+    from backend.generation.answering import wants_comparison, wants_summary
+
+    assert wants_summary("summarise this") and not wants_comparison("summarise this")
+    assert wants_comparison("compare these papers") and not wants_summary("compare these papers")

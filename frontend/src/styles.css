@@ -247,3 +247,19 @@ body {
   color: var(--muted); font-weight: 500; white-space: nowrap;
   background: var(--panel-2); position: sticky; left: 0;
 }
+
+/* --- comparison tables inside an answer --------------------------------- */
+
+.answer__tablewrap { overflow-x: auto; margin: 4px 0 12px; }
+.answer__table { border-collapse: collapse; font-size: 12.5px; min-width: 100%; }
+.answer__table th, .answer__table td {
+  border: 1px solid var(--border); padding: 7px 9px;
+  vertical-align: top; text-align: left; line-height: 1.5;
+}
+.answer__table thead th {
+  background: var(--panel); font-size: 12px; min-width: 170px; color: var(--text);
+}
+.answer__table tbody th {
+  color: var(--muted); font-weight: 500; white-space: nowrap; background: var(--panel);
+}
+.answer__text .note { color: var(--muted); font-size: 12.5px; font-style: normal; }

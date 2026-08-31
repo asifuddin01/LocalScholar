@@ -38,7 +38,9 @@ intellectual property, and pasting them into a hosted API is frequently not an o
   contribution, data, methodology, results, limitations, future work) with citations
 - **Structured extraction** — dataset, size, architecture, training, metrics, results,
   limitations, future work, each with its own citations
-- **Paper comparison** — the same extraction rendered as a side-by-side table
+- **Paper comparison** — ask "compare these papers" and get a real
+  paper-against-paper table, with an explicit note on which dimensions could not be
+  compared, and a refusal when the papers have no common ground
 - **Runs offline** — after the one-time model downloads, no network access at all
 
 ## Quick start
@@ -261,6 +263,33 @@ for a paper actually called *"Leveraging CNN and Random Forest for Accurate Food
 Prediction"*. It cited nothing, because nothing in the paper said it, and the rule caught all
 three fabricated fields automatically. The title is now read off page one by the parser
 instead: never ask a model for something you already know.
+
+### Neither is "compare these papers"
+
+The same failure, one layer up. Asked to compare two selected papers, the
+question pipeline retrieved passages *about* comparison and produced a fluent,
+accurate, useless answer: *"[2] and [5] provide a detailed comparison of CNN,
+Random Forest, MLP and SVM…"* — those are the comparisons each paper makes
+**internally**, not a comparison between the papers.
+
+Retrieval cannot fix this, because the thing being asked for does not exist in
+any passage: it only exists once both papers' facts are extracted and lined up.
+So comparison requests are routed to a pipeline that reads each paper's cached
+structured extraction, merges the evidence into one numbered list, and compares
+dimension by dimension.
+
+Two rules keep it honest:
+
+- **A dimension counts as compared only when at least two papers report it.**
+  The rest are listed as skipped, so a half-empty row is never passed off as a
+  finding.
+- **If no dimension is reported by two papers, it refuses to produce a table**
+  and says the papers have no common ground.
+
+The written synthesis above the table is generated from the extracted table
+alone, and is checked for numbers that do not appear in it — if the model
+introduces a figure from nowhere, the synthesis is dropped and the table stands
+on its own.
 
 ### "Summarise this" is not a question
 

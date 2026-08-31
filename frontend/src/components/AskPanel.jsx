@@ -6,7 +6,7 @@ import * as api from '../api.js'
 // back with them), and blank lines become paragraphs. Citations are the point
 // of this product, so they have to be followable, not just printed.
 function renderInline(text, onJump, keyPrefix) {
-  return text.split(/(\[\d{1,2}\]|\*\*[^*]+\*\*)/g).map((part, index) => {
+  return text.split(/(\[\d{1,2}\]|\*\*[^*]+\*\*|_[^_]+_)/g).map((part, index) => {
     const key = `${keyPrefix}-${index}`
     const citation = /^\[(\d{1,2})\]$/.exec(part)
     if (citation) {
@@ -24,24 +24,76 @@ function renderInline(text, onJump, keyPrefix) {
     }
     const bold = /^\*\*([^*]+)\*\*$/.exec(part)
     if (bold) return <strong key={key}>{bold[1]}</strong>
+    const italic = /^_([^_]+)_$/.exec(part)
+    if (italic) return <em key={key} className="note">{italic[1]}</em>
     return <span key={key}>{part}</span>
   })
+}
+
+// Comparisons come back as a markdown table, which is the one piece of
+// markdown worth supporting properly: a side-by-side comparison rendered as
+// run-together prose is not a comparison anyone can read.
+function MarkdownTable({ lines, onJump, keyPrefix }) {
+  const cells = (line) =>
+    line.replace(/^\||\|$/g, '').split('|').map((c) => c.trim())
+  const [head, , ...body] = lines
+  return (
+    <div className="answer__tablewrap">
+      <table className="answer__table">
+        <thead>
+          <tr>{cells(head).map((c, i) => <th key={i}>{c}</th>)}</tr>
+        </thead>
+        <tbody>
+          {body.map((row, rowIndex) => (
+            <tr key={rowIndex}>
+              {cells(row).map((cell, cellIndex) =>
+                cellIndex === 0 ? (
+                  <th key={cellIndex}>{cell}</th>
+                ) : (
+                  <td key={cellIndex}>
+                    {renderInline(cell, onJump, `${keyPrefix}-${rowIndex}-${cellIndex}`)}
+                  </td>
+                ),
+              )}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+function isTableBlock(block) {
+  const lines = block.split('\n')
+  return lines.length >= 3 && lines[1].replace(/[\s|:-]/g, '') === ''
 }
 
 function AnswerText({ text, onJump }) {
   const blocks = text.split(/\n{2,}/)
   return (
     <div className="answer__text">
-      {blocks.map((block, blockIndex) => (
-        <p key={blockIndex}>
-          {block.split('\n').map((line, lineIndex, lines) => (
-            <span key={lineIndex}>
-              {renderInline(line, onJump, `${blockIndex}-${lineIndex}`)}
-              {lineIndex < lines.length - 1 && <br />}
-            </span>
-          ))}
-        </p>
-      ))}
+      {blocks.map((block, blockIndex) => {
+        if (isTableBlock(block)) {
+          return (
+            <MarkdownTable
+              key={blockIndex}
+              lines={block.split('\n')}
+              onJump={onJump}
+              keyPrefix={blockIndex}
+            />
+          )
+        }
+        return (
+          <p key={blockIndex}>
+            {block.split('\n').map((line, lineIndex, lines) => (
+              <span key={lineIndex}>
+                {renderInline(line, onJump, `${blockIndex}-${lineIndex}`)}
+                {lineIndex < lines.length - 1 && <br />}
+              </span>
+            ))}
+          </p>
+        )
+      })}
     </div>
   )
 }

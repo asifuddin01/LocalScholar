@@ -172,6 +172,16 @@ What are the common limitations across these papers?
 Ask across several papers at once and the answer will attribute each claim to
 the paper it came from.
 
+Two kinds of request are recognised and handled differently rather than being
+answered as ordinary questions — see [Summarising](#6-summarising-a-paper) and
+[Comparing](#8-comparing-papers):
+
+| You ask | What happens |
+|---|---|
+| "summarise this" (1 paper ticked) | Structured, cited summary |
+| "compare these papers" (2+ ticked) | Paper-against-paper comparison table |
+| "what dataset did they use?" | Ordinary grounded answer |
+
 ### When it says it cannot answer
 
 > *I could not find sufficient evidence in the uploaded papers to answer this
@@ -240,14 +250,47 @@ The first extraction takes 50–90 seconds per paper and is cached afterwards.
 
 ## 8. Comparing papers
 
-Tick two or more papers, then click **Compare N selected papers**.
+There are two ways, and both produce a real paper-against-paper comparison.
 
-You get a side-by-side table across dataset, dataset size, task, architecture,
-training procedure, evaluation metrics, main results and limitations.
+**From the Ask box.** Tick two or more papers and ask:
+
+```
+compare these papers
+give me a comparison of these 2 papers
+what are the differences between them
+how do they differ
+```
+
+You get a short paragraph on how the papers relate, then a table with one
+column per paper and one row per dimension — task, dataset, dataset size,
+architecture, method, training procedure, evaluation metrics, main results,
+limitations. Every cell carries a citation you can click.
+
+**From the panel.** Tick two or more papers and click **Compare N selected
+papers** under *Paper details & comparison* for the table on its own.
+
+Underneath the table you will see a line like:
+
+> *Compared on 6 of 9 dimensions. Not reported by at least two papers:
+> Model / architecture, Method, Training procedure.*
+
+A dimension is only shown as compared when **at least two** papers report it.
+If a paper does not state something, comparing it against a paper that does
+is not a comparison — so the row is listed as skipped rather than quietly
+half-filled.
+
+**If the papers cannot be compared at all**, LocalScholar says so directly
+rather than producing a table of empty cells. That happens when no dimension is
+reported by two of the papers, usually because they address genuinely different
+kinds of problem.
+
+> With only **one** paper selected, "what did they compare against?" is treated
+> as an ordinary question about that paper's own experiments — which is
+> normally what you want. Comparison mode needs two or more papers.
 
 Comparison reuses each paper's cached details, so the first comparison of
-papers you have never opened will run the extraction for each (about a minute
-each). After that it is instant.
+papers you have never opened runs the extraction for each (about a minute
+each). After that it takes a few seconds.
 
 ---
 

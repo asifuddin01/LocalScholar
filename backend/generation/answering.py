@@ -54,9 +54,51 @@ _SUMMARY_INTENT_RE = re.compile(
 )
 
 
+# "Compare these two papers" has the same shape of problem as "summarise this".
+# Sent through question answering it retrieves passages *about* comparison and
+# describes the comparisons each paper makes internally -- "[2] and [5] compare
+# CNN against Random Forest" -- which is a true statement and not remotely what
+# was asked. Comparing paper against paper needs each paper's facts extracted
+# first, then placed side by side.
+_COMPARISON_INTENT_RE = re.compile(
+    r"""
+      \bcompare\b | \bcomparison\b | \bcomparing\b
+    | \bcontrast\b
+    | \bdifference[s]?\s+between\b
+    | \bhow\s+(?:do|does)\s+(?:they|these|it)\s+differ\b
+    | \bdiffer\s+from\b
+    | \bversus\b | \bvs\.?\b
+    | \bside[- ]by[- ]side\b
+    """,
+    re.IGNORECASE | re.VERBOSE,
+)
+
+
 def wants_summary(question: str) -> bool:
     """Does this read as a request to summarise rather than a question?"""
     return bool(_SUMMARY_INTENT_RE.search(question))
+
+
+# "What baselines did they compare against?" is a question about what a paper
+# did, not a request to compare papers -- and answering it with a side-by-side
+# table of datasets and architectures would ignore what was asked. The tell is
+# "compared against/to/with" naming something other than the papers themselves.
+_COMPARED_AGAINST_RE = re.compile(r"\bcompared?\s+(?:against|to|with)\b", re.IGNORECASE)
+_DOCUMENT_NOUN_RE = re.compile(r"\b(?:papers?|studies|study|works?|articles?)\b", re.IGNORECASE)
+
+
+def wants_comparison(question: str) -> bool:
+    """Does this read as a request to compare papers against each other?
+
+    Only meaningful with two or more papers in scope. With a single paper the
+    caller falls through to ordinary question answering, which correctly
+    describes the comparisons that paper itself reports.
+    """
+    if not _COMPARISON_INTENT_RE.search(question):
+        return False
+    if _COMPARED_AGAINST_RE.search(question) and not _DOCUMENT_NOUN_RE.search(question):
+        return False
+    return True
 
 SYSTEM_PROMPT = f"""You are a careful research assistant. You answer questions about \
 scientific papers using ONLY the numbered sources provided to you.
