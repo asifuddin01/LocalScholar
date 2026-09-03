@@ -7,7 +7,11 @@ you can check.
 ![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue)
 ![Node](https://img.shields.io/badge/node-18%2B-brightgreen)
 ![License](https://img.shields.io/badge/code-MIT-green)
-![Tests](https://img.shields.io/badge/tests-88%20passing-success)
+![Tests](https://img.shields.io/badge/tests-100%20passing-success)
+
+**[→ See a recorded session](https://asifuddin01.github.io/LocalScholar/)** — real questions,
+real answers, real citations, and the two questions it refuses. A recording rather than a
+hosted copy: the whole point is that the papers and the model stay on your machine.
 
 **[→ User Guide](USER_GUIDE.md)** — installation, day-to-day usage, configuration and
 troubleshooting. This README covers what the system does and why it is built this way.

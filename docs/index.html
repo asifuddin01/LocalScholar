@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LocalScholar — a recorded session</title>
+<meta name="description" content="A real recorded session of LocalScholar: questions asked of three papers, answered with page-level citations, and refused when the papers do not support an answer.">
+<!--
+  A recording, not an instance.
+
+  LocalScholar answers from a local model over your own PDF library, and the
+  reason it exists is that the papers stay on your machine. Hosting a live
+  version here would demonstrate the opposite of the thing it is for.
+
+  So this page replays a session that actually happened. Every answer, every
+  citation, every page number and every timing in data/sessions.json came back
+  from the running system — qwen2.5:3b-instruct on an M1 with 8 GB, over three
+  indexed papers. Nothing on this page was written to make a point, including
+  the two questions it refuses to answer.
+-->
+<style>
+  :root {
+    --bg: #FAFAF8; --panel: #FFFFFF; --line: #E3E0D8;
+    --ink: #1A1917; --soft: #5F5A52; --accent: #2F566D; --warm: #8C5A2B;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#121212; --panel:#1A1A19; --line:#2E2C29; --ink:#E9E6DF; --soft:#A09A90; --accent:#7FB3CC; --warm:#D2A06A; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); line-height:1.65;
+         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+  .wrap { max-width: 60rem; margin:0 auto; padding: 2.5rem 1.25rem 5rem; }
+  h1 { font-size:1.9rem; margin:0 0 .35rem; letter-spacing:-.01em; }
+  .tag { font-family:var(--mono); font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; color:var(--warm); margin:0 0 .5rem; }
+  .lede { color:var(--soft); margin:0 0 1.5rem; max-width:46rem; }
+  a { color:var(--accent); }
+
+  .banner { border:1px solid var(--line); border-left:3px solid var(--warm);
+            background:var(--panel); padding:.9rem 1.1rem; margin:0 0 1.5rem; font-size:.94rem; }
+  .banner strong { color:var(--ink); }
+
+  .meta { display:flex; flex-wrap:wrap; gap:.4rem 1.4rem; font-family:var(--mono);
+          font-size:.74rem; color:var(--soft); margin:0 0 2rem; }
+
+  .tabs { display:flex; gap:.4rem; flex-wrap:wrap; border-bottom:1px solid var(--line); margin-bottom:1.5rem; }
+  .tab { background:none; border:0; border-bottom:2px solid transparent; color:var(--soft);
+         font:inherit; font-size:.92rem; padding:.55rem .8rem; cursor:pointer; }
+  .tab[aria-selected="true"] { color:var(--ink); border-bottom-color:var(--accent); }
+  .tab:hover { color:var(--ink); }
+
+  .card { border:1px solid var(--line); background:var(--panel); margin:0 0 1rem; }
+  .q { display:flex; gap:.7rem; align-items:baseline; padding:.9rem 1.1rem; border-bottom:1px solid var(--line); }
+  .q-mark { font-family:var(--mono); color:var(--warm); font-size:.8rem; flex:none; }
+  .q-text { font-weight:600; }
+  .a { padding:1rem 1.1rem; }
+  .a p { margin:0 0 .6rem; }
+  .a p:last-child { margin-bottom:0; }
+  .refused { color:var(--soft); font-style:italic; }
+  .cite { font-family:var(--mono); font-size:.78em; color:var(--accent); background:none;
+          border:1px solid var(--line); border-radius:3px; padding:0 .3em; cursor:pointer; }
+  .cite:hover, .cite:focus { background:var(--accent); color:var(--panel); border-color:var(--accent); }
+  .foot { display:flex; flex-wrap:wrap; gap:.3rem 1.2rem; font-family:var(--mono); font-size:.72rem;
+          color:var(--soft); padding:.6rem 1.1rem; border-top:1px solid var(--line); }
+
+  .src { border-top:1px solid var(--line); padding:.85rem 1.1rem; background:var(--bg); }
+  .src[hidden] { display:none; }
+  .src-h { font-family:var(--mono); font-size:.72rem; color:var(--warm); margin:0 0 .3rem;
+           letter-spacing:.06em; text-transform:uppercase; }
+  .src-t { font-size:.9rem; margin:0 0 .15rem; }
+  .src-m { font-family:var(--mono); font-size:.72rem; color:var(--soft); margin:0 0 .5rem; }
+  .src-x { font-size:.88rem; color:var(--soft); margin:0; border-left:2px solid var(--line); padding-left:.8rem; }
+
+  table { border-collapse:collapse; width:100%; font-size:.9rem; }
+  th, td { border:1px solid var(--line); padding:.55rem .7rem; text-align:left; vertical-align:top; }
+  th { background:var(--bg); font-weight:600; }
+  .scroll { overflow-x:auto; }
+  dl.fields { margin:0; }
+  dl.fields > div { border-bottom:1px solid var(--line); padding:.7rem 1.1rem; }
+  dl.fields > div:last-child { border-bottom:0; }
+  dt { font-family:var(--mono); font-size:.72rem; text-transform:uppercase; letter-spacing:.06em;
+       color:var(--warm); margin-bottom:.2rem; }
+  dd { margin:0; font-size:.93rem; }
+  .none { color:var(--soft); font-style:italic; }
+  .panel-note { color:var(--soft); font-size:.92rem; margin:0 0 1rem; max-width:46rem; }
+  footer { margin-top:3rem; padding-top:1.2rem; border-top:1px solid var(--line);
+           font-size:.88rem; color:var(--soft); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="tag">Recorded session</p>
+  <h1>LocalScholar</h1>
+  <p class="lede">
+    A research-paper assistant that runs entirely on your own machine — no API key,
+    no uploads, no account. Ask questions across your PDF library and get answers
+    with page-level citations you can check.
+  </p>
+
+  <div class="banner">
+    <strong>This page is a recording, not a running copy.</strong>
+    LocalScholar answers from a local model over your own papers, and that is the
+    point of it — hosting a live version here would demonstrate the opposite.
+    Everything below actually happened: the answers, the citations, the page
+    numbers and the timings all came back from the running system, including the
+    two questions it declines to answer.
+    <a href="https://github.com/asifuddin01/LocalScholar">Run it yourself →</a>
+  </div>
+
+  <p class="meta" id="meta"></p>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tab-ask" aria-controls="p-ask" aria-selected="true">Ask</button>
+    <button class="tab" role="tab" id="tab-compare" aria-controls="p-compare" aria-selected="false">Compare</button>
+    <button class="tab" role="tab" id="tab-extract" aria-controls="p-extract" aria-selected="false">Extract</button>
+    <button class="tab" role="tab" id="tab-summary" aria-controls="p-summary" aria-selected="false">Summarise</button>
+  </div>
+
+  <section id="p-ask" role="tabpanel" aria-labelledby="tab-ask"></section>
+  <section id="p-compare" role="tabpanel" aria-labelledby="tab-compare" hidden></section>
+  <section id="p-extract" role="tabpanel" aria-labelledby="tab-extract" hidden></section>
+  <section id="p-summary" role="tabpanel" aria-labelledby="tab-summary" hidden></section>
+
+  <footer>
+    <p>
+      Code MIT. Recorded with <span id="model-name"></span> over three papers.
+      <a href="https://github.com/asifuddin01/LocalScholar">Source and installation</a> ·
+      <a href="https://asifuddin.com">asifuddin.com</a>
+    </p>
+  </footer>
+</div>
+
+<script>
+const esc = (s) => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+/** Turn the model's [1] markers into buttons that open the passage they point at. */
+function withCitations(text, sources, id) {
+  return esc(text).replace(/\[(\d+)\]/g, (whole, n) => {
+    const has = sources.some((s) => String(s.index) === n);
+    return has ? `<button class="cite" data-src="${id}:${n}">[${n}]</button>` : whole;
+  });
+}
+
+function sourceBlock(s, id) {
+  return `<div class="src" id="src-${id}:${s.index}" hidden>
+    <p class="src-h">Citation [${s.index}]</p>
+    <p class="src-t">${esc(s.title)}</p>
+    <p class="src-m">page ${esc(s.page)}${s.section ? ' · ' + esc(s.section) : ''}</p>
+    <p class="src-x">${esc(s.text)}</p>
+  </div>`;
+}
+
+function renderAsk(d) {
+  return d.ask.map((a, i) => {
+    const id = 'a' + i;
+    const body = a.found
+      ? `<p>${withCitations(a.answer, a.sources, id)}</p>`
+      : `<p class="refused">${esc(a.answer)}</p>`;
+    const cited = a.cited.length
+      ? `${a.cited.length} passage${a.cited.length === 1 ? '' : 's'} cited`
+      : 'nothing cited';
+    return `<article class="card">
+      <div class="q"><span class="q-mark">ASK</span><span class="q-text">${esc(a.question)}</span></div>
+      <div class="a">${body}</div>
+      ${a.sources.map((s) => sourceBlock(s, id)).join('')}
+      <div class="foot">
+        <span>${(a.took_ms / 1000).toFixed(1)}s</span>
+        <span>${cited}</span>
+        <span>${a.found ? 'answered' : 'refused — the papers do not support an answer'}</span>
+      </div>
+    </article>`;
+  }).join('');
+}
+
+function renderCompare(d) {
+  const c = d.compare;
+  const head = `<tr><th></th>${c.columns.map((x) => `<th>${esc(x.title)}</th>`).join('')}</tr>`;
+  const rows = c.rows.map((r) => `<tr><th>${esc(r.label)}</th>${
+    r.cells.map((cell) => {
+      const v = (cell.value ?? '').trim();
+      const marks = (cell.citations || []).map((n) => `<span class="cite">[${n}]</span>`).join(' ');
+      return `<td>${v ? esc(v) : '<span class="none">not comparable</span>'} ${marks}</td>`;
+    }).join('')
+  }</tr>`).join('');
+  return `<p class="panel-note">Two papers set against each other field by field, rather than
+    summarised one after the other. Where a field has nothing to compare, it says so.</p>
+    <div class="scroll"><table>${head}${rows}</table></div>`;
+}
+
+function renderFields(block, note) {
+  const body = block.fields.map((f) => {
+    const v = (f.value ?? '').trim();
+    const empty = !v || /^not reported$/i.test(v);
+    const marks = (f.citations || []).map((n) => `<span class="cite">[${n}]</span>`).join(' ');
+    return `<div><dt>${esc(f.label || f.name)}</dt>
+      <dd>${empty ? '<span class="none">not reported</span>' : esc(v)} ${marks}</dd></div>`;
+  }).join('');
+  return `<p class="panel-note">${note}</p>
+    <article class="card"><div class="q"><span class="q-mark">PAPER</span>
+      <span class="q-text">${esc(block.title)}</span></div>
+      <dl class="fields">${body}</dl></article>`;
+}
+
+fetch('data/sessions.json').then((r) => r.json()).then((d) => {
+  document.getElementById('meta').innerHTML = [
+    `${d.documents.length} papers`,
+    `${d.documents.reduce((n, x) => n + (x.chunk_count || 0), 0)} passages`,
+    esc(d.model),
+    esc(d.machine),
+    `recorded ${esc(d.recorded_at.slice(0, 10))}`,
+  ].map((x) => `<span>${x}</span>`).join('');
+  document.getElementById('model-name').textContent = d.model;
+
+  document.getElementById('p-ask').innerHTML = renderAsk(d);
+  document.getElementById('p-compare').innerHTML = renderCompare(d);
+  document.getElementById('p-extract').innerHTML = renderFields(d.extract,
+    'Every field the system pulls out of one paper, each with the passage it came from. ' +
+    'A field it cannot support is left as "not reported" rather than guessed.');
+  document.getElementById('p-summary').innerHTML = renderFields(d.summary,
+    'A structured summary — problem, contribution, data, method, results, limitations, ' +
+    'future work — with citations, rather than a paragraph you would have to trust.');
+
+  // Citation markers reveal the passage underneath the answer they belong to.
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('.cite[data-src]');
+    if (!b) return;
+    const el = document.getElementById('src-' + b.dataset.src);
+    if (el) el.hidden = !el.hidden;
+  });
+});
+
+const tabs = [...document.querySelectorAll('.tab')];
+tabs.forEach((t) => t.addEventListener('click', () => {
+  tabs.forEach((o) => {
+    const on = o === t;
+    o.setAttribute('aria-selected', String(on));
+    document.getElementById(o.getAttribute('aria-controls')).hidden = !on;
+  });
+}));
+</script>
+</body>
+</html>

@@ -1,0 +1,1268 @@
+{
+ "recorded_at": "2026-09-03T11:50:39Z",
+ "model": "qwen2.5:3b-instruct",
+ "machine": "Apple M1, 8 GB, CPU only",
+ "documents": [
+  {
+   "id": "8a518a2d178130d9",
+   "filename": "celloracle.pdf",
+   "title": "Dissecting cell identity via network inference and in silico gene perturbation",
+   "page_count": 43,
+   "chunk_count": 320
+  },
+  {
+   "id": "d9e774fdbd4cb47e",
+   "filename": "retinal-fundus-multi-disease.pdf",
+   "title": "Retinal Fundus Multi-Disease Image Classification using Hybrid CNN-Transformer-Ensemble Architectures",
+   "page_count": 17,
+   "chunk_count": 55
+  },
+  {
+   "id": "ff35925f71fc7f5a",
+   "filename": "food-expiry.pdf",
+   "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+   "page_count": 4,
+   "chunk_count": 33
+  }
+ ],
+ "ask": [
+  {
+   "kind": "grounded",
+   "question": "How many fruit images are in the dataset?",
+   "answer": "The dataset includes 13,599 fruit images. [1]",
+   "found": true,
+   "cited": [
+    1
+   ],
+   "took_ms": 22589,
+   "sources": [
+    {
+     "index": 1,
+     "document_id": "ff35925f71fc7f5a",
+     "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+     "page": 2,
+     "section": "A. Dataset Description",
+     "text": "The dataset includes 13,599 fruit images (10,901 for training, 2,698 for testing), categorized as apples, bananas, and oranges, and labeled as \u201dfresh\u201d or \u201drotten.\u201d The training set is balanced with 6,161 rotten and 4,740 fresh fruits, and similar distribution is maintained in the test set. Image dimensions range from 144x116 to 860x518 pixels, with an average brightness of 165.88. Additional features include texture scores, storage temperature (5\u00b0C to 30\u00b0C), humidity (40% to 90%), and days since purchase (0 to 12\u2026"
+    },
+    {
+     "index": 2,
+     "document_id": "ff35925f71fc7f5a",
+     "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+     "page": 2,
+     "section": "B. Data Preprocessing",
+     "text": "In this study, data preprocessing is essential to ensure the dataset is ready for modeling. Initially, label encoding is applied to the \u201cFruit\u201d and \u201cFreshness\u201d columns to transform the categorical variables into numerical values, which are required for machine learning models. The \u201cFruit\u201d column is encoded using a label encoder, and the \u201cFreshness\u201d column is also encoded to create target labels. Fig. 3. Correlation Heatmap (Numeric Features)) The next step involves splitting the dataset into features (X) and the\u2026"
+    },
+    {
+     "index": 3,
+     "document_id": "ff35925f71fc7f5a",
+     "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+     "page": 2,
+     "section": "II. LITERATURE REVIEW",
+     "text": "high computational costs, this approach offers significant potential for practical use in retail to limit food waste. high computational costs, this approach offers significant potential for practical use in retail to limit food waste. Li et al.\u2019s \u201dIntelligent Monitoring of Fruit and Vegetable Freshness in Supply Chains\u201d (2025) focuses on realtime freshness monitoring by combining image analysis with supply chain metadata, enabling continuous freshness evaluation to maintain food quality and minimize waste. Zhao\u2026"
+    },
+    {
+     "index": 4,
+     "document_id": "ff35925f71fc7f5a",
+     "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+     "page": 2,
+     "section": "C. Models and tools Used",
+     "text": "The study applies multiple machine learning algorithms to classify fresh fruitness with Random Forest multilayer, Perceptron MLP, and convolutional neural network CNN Bing the primary models. The Random Forest model is used due to its ability to handle large data sets and its robustness against overfitting. The MLP is implemented using a pipeline for scalable processing and CNN is applied for image classification. Each model is evaluated using accuracy, precision recall and F1 score matrices, as well as through\u2026"
+    },
+    {
+     "index": 5,
+     "document_id": "ff35925f71fc7f5a",
+     "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+     "page": 1,
+     "section": "II. LITERATURE REVIEW",
+     "text": "Similarly, \u201dPredicting Shelf-Life of Fruits\u201d (2024) by Liu et al. Similarly, \u201dPredicting Shelf-Life of Fruits\u201d (2024) by Liu et al. [2] combines CNN for image classification with environmental data like temperature and storage duration to predict fruit freshness. This hybrid approach, leveraging both image and environmental factors, significantly improves accuracy in predicting ripeness and reduces spoilage, especially in retail environments. Further, Zhang et al.\u2019s \u201dFreshness Monitoring in Supply Chains\u201d (2025)\u2026"
+    },
+    {
+     "index": 6,
+     "document_id": "ff35925f71fc7f5a",
+     "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+     "page": 3,
+     "section": "D. Analysis",
+     "text": "The performance analysis of the five models\u2014CNN, Random Forest, MLP, Gradient Boosting, and SVM\u2014reveals distinct differences in their ability to classify fresh and rotten fruits. CNN achieves the highest accuracy at 96%, outperformance in precision, recall, and F1-score across both classes. Random Forest and Gradient Boosting also perform competitively, with Random Forest achieving an accuracy of 81%, and Gradient Boosting following closely. MLP and"
+    }
+   ]
+  },
+  {
+   "kind": "grounded",
+   "question": "What models are compared, and which performs best?",
+   "answer": "In this study, five machine learning models are compared: CNN, SVM, Gradient Boosting, MLP, and Random Forest. The model that performs best is the CNN, as evidenced by its accuracy of 96%, precision, recall, and F1-score for both the \"fresh\" and \"rotten\" classes, and the highest AUC of 0.995 in the ROC curve comparison [1], [2], [5].",
+   "found": true,
+   "cited": [
+    1,
+    2,
+    5
+   ],
+   "took_ms": 7303,
+   "sources": [
+    {
+     "index": 1,
+     "document_id": "ff35925f71fc7f5a",
+     "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+     "page": 3,
+     "section": "A. Performance Metrics",
+     "text": "In this section, we will discuss the results of our models and the challenges encountered during the project. The performance comparison of five machine learning models\u2014CNN, SVM, Gradient Boosting, MLP, and Random Forest\u2014reveals that CNN outperforms all other models in terms of accuracy, achieving 96%. CNN leads in precision, recall, and F1-score for both the \u201cfresh\u201d and \u201crotten\u201d classes, highlighting its superior ability to classify both classes correctly. Random Forest shows competitive performance with an\u2026"
+    },
+    {
+     "index": 2,
+     "document_id": "ff35925f71fc7f5a",
+     "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+     "page": 3,
+     "section": "B. ROC Curve Comparison",
+     "text": "Below is the ROC curve comparison between the models. The CNN model shows the highest AUC, indicating the best overall performance in distinguishing between fresh and rotten fruits. Fig. 4. ROC Curve"
+    },
+    {
+     "index": 3,
+     "document_id": "ff35925f71fc7f5a",
+     "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+     "page": 3,
+     "section": "D. Analysis",
+     "text": "The performance analysis of the five models\u2014CNN, Random Forest, MLP, Gradient Boosting, and SVM\u2014reveals distinct differences in their ability to classify fresh and rotten fruits. CNN achieves the highest accuracy at 96%, outperformance in precision, recall, and F1-score across both classes. Random Forest and Gradient Boosting also perform competitively, with Random Forest achieving an accuracy of 81%, and Gradient Boosting following closely. MLP and"
+    },
+    {
+     "index": 4,
+     "document_id": "d9e774fdbd4cb47e",
+     "title": "Retinal Fundus Multi-Disease Image Classification using Hybrid CNN-Transformer-Ensemble Architectures",
+     "page": 13,
+     "section": "6 Results and Discussion",
+     "text": "showed superior performance compared to the C-Tran baseline model while maintaining lower computational complexity. showed superior performance compared to the C-Tran baseline model while maintaining lower computational complexity. Notably, the IEViT v2 DPD variant displayed slightly better performance among the IEViT models for 32 \u00d7 32 dimension patch. The IE variants"
+    },
+    {
+     "index": 5,
+     "document_id": "ff35925f71fc7f5a",
+     "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+     "page": 3,
+     "section": "A. Performance Metrics",
+     "text": "SVM, though slightly behind, performs well, particularly in precision for the \u201cfresh\u201d class. SVM, though slightly behind, performs well, particularly in precision for the \u201cfresh\u201d class. The ROC AUC scores indicate that CNN and Gradient Boosting are the strongest performers, with CNN achieving an outstanding AUC of 0.995. The precision-recall curves further emphasize CNN\u2019s edge, showing the highest Average Precision (AP) of 0.994. These results suggest that CNN is the most effective model for this classification\u2026"
+    },
+    {
+     "index": 6,
+     "document_id": "d9e774fdbd4cb47e",
+     "title": "Retinal Fundus Multi-Disease Image Classification using Hybrid CNN-Transformer-Ensemble Architectures",
+     "page": 6,
+     "section": "4.1 Deep Convolutional Neural Networks",
+     "text": "Table 4. Performance of each CNN architecture on the dataset Model Loss ML F1 ML AUC DenseNet121 2.121 0.276 0.951 DenseNet201a 1.692 0.272 0.959 ResNet152d 1.815 0.410 0.947 EfficientNetV2-S 1.881 0.214 0.958 a CNNs in bold indicate the top two best-performing architectures"
+    }
+   ]
+  },
+  {
+   "kind": "cross",
+   "question": "What datasets do these papers use, and how large are they?",
+   "answer": "[1] and [5] use datasets for different purposes. [1] uses MuReD, RFMiD, and RFMiD 2.0 datasets, with MuReD being the preferred dataset for reproducing the C- Tran paper. MuReD contains 2208 labels in total, split into 1766 for training, 442 for validation, and 20 for testing. [5] uses a mouse early gastrulation scRNA-seq dataset, which was generated from seven chimeric E8.5 embryos of WT and Tal1 KO cells. The dataset size is not explicitly stated, but it is mentioned that the data were normalized and processed in a way similar to the Paul et al. dataset.",
+   "found": true,
+   "cited": [
+    1,
+    5
+   ],
+   "took_ms": 10926,
+   "sources": [
+    {
+     "index": 1,
+     "document_id": "d9e774fdbd4cb47e",
+     "title": "Retinal Fundus Multi-Disease Image Classification using Hybrid CNN-Transformer-Ensemble Architectures",
+     "page": 3,
+     "section": "2 Dataset",
+     "text": "Among the three publicly available datasets shown in the table below, we chose the MuReD dataset [17]. This decision was influenced by its utilization in the C- Tran paper we aimed to reproduce for establishing baselines of our model [15]. MuReD, a refined variant of the highly imbalanced RFMiD dataset, was preferred due to its relevance. In the future, we intend to incorporate the RFMiD 2.0 and JSIEC datasets in our analysis as it is the latest dataset out of three and encompasses all the essential labels of\u2026"
+    },
+    {
+     "index": 2,
+     "document_id": "ff35925f71fc7f5a",
+     "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+     "page": 2,
+     "section": "A. Dataset Description",
+     "text": "The dataset includes 13,599 fruit images (10,901 for training, 2,698 for testing), categorized as apples, bananas, and oranges, and labeled as \u201dfresh\u201d or \u201drotten.\u201d The training set is balanced with 6,161 rotten and 4,740 fresh fruits, and similar distribution is maintained in the test set. Image dimensions range from 144x116 to 860x518 pixels, with an average brightness of 165.88. Additional features include texture scores, storage temperature (5\u00b0C to 30\u00b0C), humidity (40% to 90%), and days since purchase (0 to 12\u2026"
+    },
+    {
+     "index": 3,
+     "document_id": "8a518a2d178130d9",
+     "title": "Dissecting cell identity via network inference and in silico gene perturbation",
+     "page": 19,
+     "section": "Article",
+     "text": "dataset16 (Extended Data Fig. 6c). Zebrafish lines The zebrafish experiments were approved by the Institutional Animal Care and Use Committees at Washington University in St Louis. All animal experiments followed all relevant guidelines and regulation. The following zebrafish lines were used in this study: AB* and floating headn1/n1 (flh/noto) mutants37. Sample sizes and developmental stages are stated below. Randomization was not performed as experimental groups were determined by genotype. Blinding was performed\u2026"
+    },
+    {
+     "index": 4,
+     "document_id": "ff35925f71fc7f5a",
+     "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+     "page": 2,
+     "section": "B. Data Preprocessing",
+     "text": "enc\u201d, \u201cdays since purchase\u201d, \u201cstorage temperature (\u00b0C)\u201d, \u201chumidity percentage\u201d, and \u201chandle level (0-100)\u201d as features. Additionally, the dataset is standardized using a standard scaler to ensure that the features have a mean of zero and a standard deviation of one. This improves the performance of machine learning algorithms by making the learning process more efficient."
+    },
+    {
+     "index": 5,
+     "document_id": "8a518a2d178130d9",
+     "title": "Dissecting cell identity via network inference and in silico gene perturbation",
+     "page": 17,
+     "section": "Article",
+     "text": "were generated from seven chimeric E8.5 embryos of WT and Tal1 KO cells (25,307 cells and 26,311 cells, respectively). were generated from seven chimeric E8.5 embryos of WT and Tal1 KO cells (25,307 cells and 26,311 cells, respectively). We used the R library, MouseGastrulation- Data (https://github.com/MarioniLab/MouseGastrulationData), to download the mouse early gastrulation scRNA-seq dataset. This library provides the GEM and metadata. We used the Tal1 chimera GEM and cell-type annotation, \u201ccell type.mapped\u201d,\u2026"
+    },
+    {
+     "index": 6,
+     "document_id": "d9e774fdbd4cb47e",
+     "title": "Retinal Fundus Multi-Disease Image Classification using Hybrid CNN-Transformer-Ensemble Architectures",
+     "page": 1,
+     "section": "Abstract",
+     "text": "Abstract. Our research is motivated by the urgent global issue of a large population affected by retinal diseases, which are evenly distributed but underserved by specialized medical expertise, particularly in non-urban areas. Our primary objective is to bridge this healthcare gap by developing a comprehensive diagnostic system capable of accurately predicting retinal diseases solely from fundus images. However, we faced significant challenges due to limited, diverse datasets and imbalanced class distributions. To\u2026"
+    }
+   ]
+  },
+  {
+   "kind": "limits",
+   "question": "What limitations do the authors state about their own work?",
+   "answer": "The authors state that their work is constrained by data size and class imbalances, which could lead to randomness and potential overfitting [4]. Additionally, they highlight that the input data may not report the emergence of new transcriptional states in the context of loss of gene function, suggesting that existing single-cell data supports the use of CellOracle to accurately simulate TF perturbation effects [3]. They also note that the method has limitations, such as the inability to analyze cell states that do not exist in the input scRNA-seq data and the limitation by input data availability and quality [3]. Furthermore, they acknowledge that their models were not tuned for hyperparameters, which may affect their performance in real-world applications [1]. Lastly, they mention that their models were only evaluated based on standard metrics like accuracy, precision, recall, and F1-score, which do not account for real-time performance or model robustness under different conditions such as noise or varying data distributions [1].",
+   "found": true,
+   "cited": [
+    4,
+    3,
+    1
+   ],
+   "took_ms": 11730,
+   "sources": [
+    {
+     "index": 1,
+     "document_id": "ff35925f71fc7f5a",
+     "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+     "page": 4,
+     "section": "F. Limitation",
+     "text": "One limitation of this study is that the models were only evaluated based on standard metrics like accuracy, precision, recall, and F1-score. While these metrics provide a comprehensive view of model performance, they do not account for real-time performance or model robustness under different conditions such as noise or varying data distributions. Additionally, the models were not tuned for hyperparameters, which may affect their performance in real-world applications."
+    },
+    {
+     "index": 2,
+     "document_id": "d9e774fdbd4cb47e",
+     "title": "Retinal Fundus Multi-Disease Image Classification using Hybrid CNN-Transformer-Ensemble Architectures",
+     "page": 15,
+     "section": "7 Conclusion",
+     "text": "the constraints imposed by data size and class imbalances, which could lead to randomness and potential overfitting. Despite these challenges, our work represents a significant step in advancing deep learning-based strategies for accurate retinal disease classification. It also opens avenues for further refinement. We plan to focus on improving model interpretability to address these limitations and enhance practical utility. In our future work, we aim to explore the integration of Shapley values to unravel the\u2026"
+    },
+    {
+     "index": 3,
+     "document_id": "8a518a2d178130d9",
+     "title": "celloracle.pdf",
+     "page": 9,
+     "section": "Article",
+     "text": "and LOF in this study, we have also recently demonstrated that CellOracle can be used to simulate TF overexpression48. We note some limitations of the method. First, CellOracle visualizes the simulation vector within the existing trajectory space; thus, cell states that do not exist in the input scRNA-seq data cannot be analysed. Nevertheless, existing single-cell data collected after severe developmental disruption do not report the emergence of new transcriptional states in the context of loss of gene function,\u2026"
+    },
+    {
+     "index": 4,
+     "document_id": "d9e774fdbd4cb47e",
+     "title": "Retinal Fundus Multi-Disease Image Classification using Hybrid CNN-Transformer-Ensemble Architectures",
+     "page": 15,
+     "section": "7 Conclusion",
+     "text": "In summary, our research underscores the effectiveness of hybrid models in classifying retinal images despite the limitations of a small, imbalanced dataset. While we have made commendable progress in multi-label retinal disease classification, we acknowledge the constraints imposed by data size and class imbalances, which could lead to randomness and potential overfitting."
+    },
+    {
+     "index": 5,
+     "document_id": "8a518a2d178130d9",
+     "title": "Dissecting cell identity via network inference and in silico gene perturbation",
+     "page": 21,
+     "section": "Article",
+     "text": "is supported by a National Science Foundation Graduate Research Fellowship (DGE-2139839 and DGE-1745038). Author contributions K.K. and S.A.M. conceived the research. K.K. led the computational and experimental work, assisted by C.M.H. and K.J. and supervised by S.A.M. B.S. performed the zebrafish experimental validations, supervised by L.S.-K. All authors participated in the interpretation of data and writing. Competing interests The authors declare no competing interests."
+    },
+    {
+     "index": 6,
+     "document_id": "8a518a2d178130d9",
+     "title": "celloracle.pdf",
+     "page": 9,
+     "section": "Article",
+     "text": "theory and could not consider cell identity as a dynamic property. Here we present a strategy that overcomes these limitations by integrating computational perturbation with GRN modelling. CellOracle uses GRN models to yield mechanistic insights into the regulation of cell identity; simulation and vector visualization based on the custom network model enables the interpretable, scalable and broadly applicable analysis of dynamic TF function."
+    }
+   ]
+  },
+  {
+   "kind": "refusal",
+   "question": "What was the Dice score on the KiTS19 kidney tumour segmentation benchmark?",
+   "answer": "I could not find sufficient evidence in the uploaded papers to answer this question.",
+   "found": false,
+   "cited": [],
+   "took_ms": 6877,
+   "sources": [
+    {
+     "index": 1,
+     "document_id": "8a518a2d178130d9",
+     "title": "Dissecting cell identity via network inference and in silico gene perturbation",
+     "page": 23,
+     "section": "Article",
+     "text": "GRN model 400 300 200 100 50 25 10 number of cells Lung Liver Kidney Heart Spleen Base GRN ATAC-seq data Extended Data Fig. 2 | Benchmarking of inferred GRN configurations. (a,b) We benchmarked the CellOracle GRN modelling method against pre-existing GRN inference algorithms: WGCNA, DCOL, GENIE3, and SCENIC. Details of input data and ground-truth data are described in the Methods. We generated a base GRN using the Cusanovich mouse sci-ATAC-seq atlas dataset13 or UCSC mm9 promoter DNA sequence data. CellOracle\u2026"
+    },
+    {
+     "index": 2,
+     "document_id": "8a518a2d178130d9",
+     "title": "Dissecting cell identity via network inference and in silico gene perturbation",
+     "page": 23,
+     "section": "Article",
+     "text": "GRN model 400 300 200 100 50 25 10 number of cells Lung Liver Kidney Heart Spleen Base GRN ATAC-seq data Receiver Operating Characteristic curve) heat map. The top score in each condition is highlighted with a red rectangle. (b) EPR (Early Precision Ratio) heat map. EPR represents the EP ratio relative to the random model ER score. An EPR of less than 1 indicates that the GRN inference results are no better than random prediction. (c,d) The performance of CellOracle was tested after downsampling cells. GRN models\u2026"
+    },
+    {
+     "index": 3,
+     "document_id": "8a518a2d178130d9",
+     "title": "celloracle.pdf",
+     "page": 3,
+     "section": "Article",
+     "text": "1a, right), producing a cell-type- or cell-state-specific GRN configuration. To benchmark our GRN inference method, we generated a comprehensive transcriptional ground-truth GRN using 1,298 chromatin immunoprecipitation followed by sequencing (ChIP\u2013seq) datasets for 80 regulatory factors across 5 different tissues14. In addition to benchmarking against diverse GRN inference algorithms, we also assessed the performance of our approach using different base GRNs, data sources and cell downsampling (Extended Data Fig.\u2026"
+    },
+    {
+     "index": 4,
+     "document_id": "8a518a2d178130d9",
+     "title": "celloracle.pdf",
+     "page": 14,
+     "section": "R N",
+     "text": "loaded with the \u2018loadInt\u2019 function, and the \u2018CoexWeight\u2019 value was used as the inferred value of the SCENIC algorithm. Ground-truth data preparation for GRN benchmarking Cell-type-specific ground-truth GRNs were generated in the same manner as in a previous benchmarking study55. Here, we selected tissues commonly available in the Tabula Muris scRNA-seq dataset, mouse sci-ATAC-seq atlas data and ground-truth datasets: heart, kidney, liver, lung and spleen. The ground-truth data were constructed as follows. (i)\u2026"
+    },
+    {
+     "index": 5,
+     "document_id": "8a518a2d178130d9",
+     "title": "Dissecting cell identity via network inference and in silico gene perturbation",
+     "page": 15,
+     "section": "Article",
+     "text": "2c). EPR was relatively robust even with small cell numbers (Extended Data Fig. 2d). We performed additional benchmarking to investigate data compatibility between the base GRN and scRNA-seq data sources. A tissue-specific base GRN was generated separately using bulk ATAC-seq data57. We focused on the same five tissue types as above. Unprocessed bulk ATAC-seq data were downloaded from the NCBI database using the SRA tool kit (spleen: SRR8119827; liver: SRR8119839; heart: SRR8119835; lung: SRR8119864; and kidney:\u2026"
+    },
+    {
+     "index": 6,
+     "document_id": "8a518a2d178130d9",
+     "title": "Dissecting cell identity via network inference and in silico gene perturbation",
+     "page": 7,
+     "section": "Article",
+     "text": "5g, bottom). 5g, bottom). This module comprises late notochord marker genes, such as twist2 and nog1 (Extended Data Fig. 13f, right), which showed significantly lower expression in lhx1a crispant cells (P = 4.52 \u00d7 10\u2212105 and P = 4.95 \u00d7 10\u2212105, respectively; Fig. 5h). Further, lhx1a crispant cells exhibited a higher somite module score (P = 5.19 \u00d7 10\u221225 and Supplementary Table 5), suggesting that notochord cells may be redirected towards a somitic identity after lhx1a LOF. Overall, the NMF analysis supports the\u2026"
+    }
+   ]
+  },
+  {
+   "kind": "refusal",
+   "question": "What is the melting point of gallium?",
+   "answer": "I could not find sufficient evidence in the uploaded papers to answer this question.",
+   "found": false,
+   "cited": [],
+   "took_ms": 6088,
+   "sources": [
+    {
+     "index": 1,
+     "document_id": "8a518a2d178130d9",
+     "title": "Dissecting cell identity via network inference and in silico gene perturbation",
+     "page": 19,
+     "section": "Article",
+     "text": "On the third day, embryos were washed more than 4 times in 5\u00d7 SSCT and either stored at 4 \u00b0C or mounted for microscopy. Microscopy Embryos subjected to HCR were mounted in 3% low-melt agarose in glass-bottomed 35-mm Petri dishes. Alternatively, embryos were manually deyolked and flattened on a glass slide with one to two"
+    },
+    {
+     "index": 2,
+     "document_id": "d9e774fdbd4cb47e",
+     "title": "Retinal Fundus Multi-Disease Image Classification using Hybrid CNN-Transformer-Ensemble Architectures",
+     "page": 9,
+     "section": "4.4 IEViT Model",
+     "text": "The proposed IEViT (Iterative Expansion Vision Transformer) model is an extension of the ViT (Vision Transformer) architecture, incorporating concepts inspired by the ResNet (Residual Network). It introduces an iterative process in which the original input image is iteratively added to the output of each Transformer encoder layer. To facilitate this, a convolutional block is designed in parallel with the ViT network. The CNN block processes the entire input image and generates an embedding of the image denoted as\u2026"
+    },
+    {
+     "index": 3,
+     "document_id": "8a518a2d178130d9",
+     "title": "celloracle.pdf",
+     "page": 12,
+     "section": "Methods",
+     "text": "distribution of coefficient value b: \uf8f8 \uf8f7 \u223c \u2211 x b x c \u03f5 Normal + , j \uf8ed \uf8ec i j i j =1 \u223c b \u03bc \u03c3 Normal( , ) b b where \u03bcb is the centre of the distribution of b, and \u03c3b is the standard deviation of b. The user can choose the model method depending on the availability of computational resources and the aim of the analysis; CellOracle\u2019s Bayesian Ridge requires fewer computational resources, whereas the Bagging Ridge tends to produce better inference results than Bayesian Ridge. Using the posterior distribution, we can\u2026"
+    },
+    {
+     "index": 4,
+     "document_id": "8a518a2d178130d9",
+     "title": "Dissecting cell identity via network inference and in silico gene perturbation",
+     "page": 7,
+     "section": "Article",
+     "text": "5g, bottom). 5g, bottom). This module comprises late notochord marker genes, such as twist2 and nog1 (Extended Data Fig. 13f, right), which showed significantly lower expression in lhx1a crispant cells (P = 4.52 \u00d7 10\u2212105 and P = 4.95 \u00d7 10\u2212105, respectively; Fig. 5h). Further, lhx1a crispant cells exhibited a higher somite module score (P = 5.19 \u00d7 10\u221225 and Supplementary Table 5), suggesting that notochord cells may be redirected towards a somitic identity after lhx1a LOF. Overall, the NMF analysis supports the\u2026"
+    },
+    {
+     "index": 5,
+     "document_id": "8a518a2d178130d9",
+     "title": "Dissecting cell identity via network inference and in silico gene perturbation",
+     "page": 39,
+     "section": "Article",
+     "text": "Late-stage notochord markers, twist2 and nog1, or broad/early notochord markers, noto and tbxta, are visualized. Late-stage notochord markers, twist2 and nog1, or broad/early notochord markers, noto and tbxta, are visualized. Statistical tests: Wilcoxon rank-sum test, two-tailed with Bonferroni p-value correction. lhx1a experiment: twist2 p = 7.118\u00d710\u221264, nog1 p = 7.757\u00d710\u221267, noto p = 7.718\u00d710\u221211. sebox experiment: twist2 p = 8.022\u00d710\u221210, nog1 p = 3.184\u00d710\u22123, tbxta p = 1.551\u00d710\u22123. irx3a experiment: twist2 p =\u2026"
+    },
+    {
+     "index": 6,
+     "document_id": "8a518a2d178130d9",
+     "title": "Dissecting cell identity via network inference and in silico gene perturbation",
+     "page": 7,
+     "section": "Article",
+     "text": "for scRNA-seq. We integrated these datasets and projected them onto the WT axial mesoderm reference atlas. In agreement with previous observations, we observed a significant depletion of cells labelled as notochord in flhn1/n1 mutants (\u221298%, relative to control, P = 5.55 \u00d7 10\u221252, chi-square test; Fig. 4c, left), concomitant with an expansion of the somite cluster (+41.3%; P = 5.90 \u00d7 10\u221229; Extended Data Fig. 11e, left). Furthermore, as predicted by noto LOF simulation, we observed a significant expansion of the\u2026"
+    }
+   ]
+  }
+ ],
+ "compare": {
+  "columns": [
+   {
+    "document_id": "ff35925f71fc7f5a",
+    "filename": "food-expiry.pdf",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata"
+   },
+   {
+    "document_id": "d9e774fdbd4cb47e",
+    "filename": "retinal-fundus-multi-disease.pdf",
+    "title": "Retinal Fundus Multi-Disease Image Classification using Hybrid CNN-Transformer-Ensemble Architectures"
+   }
+  ],
+  "rows": [
+   {
+    "field": "dataset",
+    "label": "Dataset",
+    "cells": [
+     {
+      "value": "13,599 fruit images (10,901 for training, 2,698 for testing)",
+      "citations": [
+       9
+      ]
+     },
+     {
+      "value": "MuReD dataset [17]",
+      "citations": [
+       10
+      ]
+     }
+    ]
+   },
+   {
+    "field": "dataset_size",
+    "label": "Dataset size",
+    "cells": [
+     {
+      "value": "13,599",
+      "citations": [
+       9
+      ]
+     },
+     {
+      "value": "2208",
+      "citations": [
+       10
+      ]
+     }
+    ]
+   },
+   {
+    "field": "task",
+    "label": "Task",
+    "cells": [
+     {
+      "value": "Develop an AI-driven solution that predicts the expiry dates of food items using both image data and environmental metadata, including temperature, humidity, and days since purchase.",
+      "citations": [
+       7,
+       3
+      ]
+     },
+     {
+      "value": "Retinal Fundus Multi-Disease Image Classification",
+      "citations": [
+       4
+      ]
+     }
+    ]
+   },
+   {
+    "field": "model_architecture",
+    "label": "Model / architecture",
+    "cells": [
+     {
+      "value": "CNN, Random Forest, MLP, Gradient Boosting, SVM",
+      "citations": [
+       23,
+       17
+      ]
+     },
+     {
+      "value": "Not reported",
+      "citations": []
+     }
+    ]
+   },
+   {
+    "field": "training_procedure",
+    "label": "Training procedure",
+    "cells": [
+     {
+      "value": "Using Python libraries such as scikit-learn, pandas, matplotlib, Seaborn, LevelEncoder, Standard-Scalar, and machine learning algorithms like random forest, MLP, and CNN for classification",
+      "citations": [
+       18
+      ]
+     },
+     {
+      "value": "Not reported",
+      "citations": []
+     }
+    ]
+   },
+   {
+    "field": "evaluation_metrics",
+    "label": "Evaluation metrics",
+    "cells": [
+     {
+      "value": "Accuracy, Precision (Fresh), Precision (Rotten), Recall (Fresh), Recall (Rotten), F1-score (Fresh), F1-score (Rotten), AUC (ROC)",
+      "citations": [
+       26,
+       31
+      ]
+     },
+     {
+      "value": "F1-score, AUC, and mAP",
+      "citations": [
+       25,
+       28
+      ]
+     }
+    ]
+   },
+   {
+    "field": "main_results",
+    "label": "Main results",
+    "cells": [
+     {
+      "value": "CNN outperforms all other models in terms of accuracy, achieving 96.4%. SVM performs well, particularly in precision for the \u2018fresh\u2019 class.",
+      "citations": [
+       25,
+       27
+      ]
+     },
+     {
+      "value": "achieved a remarkable model score of 0.9166, surpassing the baseline score of 0.9",
+      "citations": [
+       30,
+       28
+      ]
+     }
+    ]
+   },
+   {
+    "field": "limitations",
+    "label": "Limitations",
+    "cells": [
+     {
+      "value": "Overfitting, computational resources, class imbalances, lack of real-time monitoring, economic losses, environmental harm",
+      "citations": [
+       40
+      ]
+     },
+     {
+      "value": "data size and class imbalances",
+      "citations": [
+       40,
+       33
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "extract": {
+  "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+  "fields": [
+   {
+    "name": "title",
+    "label": "Title",
+    "value": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "citations": []
+   },
+   {
+    "name": "authors",
+    "label": "Authors",
+    "value": "Not reported",
+    "citations": []
+   },
+   {
+    "name": "year",
+    "label": "Year",
+    "value": "Not reported",
+    "citations": []
+   },
+   {
+    "name": "research_problem",
+    "label": "Research problem",
+    "value": "Food waste is a significant global issue, impacting the environment, economy, and food security. A large portion of edible food is discarded prematurely, particularly in retail, the food supply chain, and households, due to inaccurate spoilage predictions.",
+    "citations": [
+     3,
+     7
+    ]
+   },
+   {
+    "name": "task",
+    "label": "Task",
+    "value": "Develop an AI-driven solution that predicts the expiry dates of food items using both image data and environmental metadata, including temperature, humidity, and days since purchase.",
+    "citations": [
+     7,
+     3
+    ]
+   },
+   {
+    "name": "dataset",
+    "label": "Dataset",
+    "value": "13,599 fruit images (10,901 for training, 2,698 for testing)",
+    "citations": [
+     9
+    ]
+   },
+   {
+    "name": "dataset_size",
+    "label": "Dataset size",
+    "value": "13,599",
+    "citations": [
+     9
+    ]
+   },
+   {
+    "name": "model_architecture",
+    "label": "Model / architecture",
+    "value": "CNN, Random Forest, MLP, Gradient Boosting, SVM",
+    "citations": [
+     23,
+     17
+    ]
+   },
+   {
+    "name": "method",
+    "label": "Method",
+    "value": "Machine learning algorithms for classification",
+    "citations": [
+     22,
+     19
+    ]
+   },
+   {
+    "name": "training_procedure",
+    "label": "Training procedure",
+    "value": "Using Python libraries such as scikit-learn, pandas, matplotlib, Seaborn, LevelEncoder, Standard-Scalar, and machine learning algorithms like random forest, MLP, and CNN for classification",
+    "citations": [
+     18
+    ]
+   },
+   {
+    "name": "loss_function",
+    "label": "Loss function",
+    "value": "Not reported",
+    "citations": []
+   },
+   {
+    "name": "evaluation_metrics",
+    "label": "Evaluation metrics",
+    "value": "Accuracy, Precision (Fresh), Precision (Rotten), Recall (Fresh), Recall (Rotten), F1-score (Fresh), F1-score (Rotten), AUC (ROC)",
+    "citations": [
+     26,
+     31
+    ]
+   },
+   {
+    "name": "main_results",
+    "label": "Main results",
+    "value": "CNN outperforms all other models in terms of accuracy, achieving 96.4%. SVM performs well, particularly in precision for the \u2018fresh\u2019 class.",
+    "citations": [
+     25,
+     27
+    ]
+   },
+   {
+    "name": "limitations",
+    "label": "Limitations",
+    "value": "Overfitting, computational resources, class imbalances, lack of real-time monitoring, economic losses, environmental harm",
+    "citations": [
+     40
+    ]
+   },
+   {
+    "name": "future_work",
+    "label": "Future work",
+    "value": "Address class imbalances with techniques like SMOTE, hyperparameter tuning, and integrating environmental features, explore advanced CNN architectures, incorporate realtime sensor data, use other advanced models like transformers, focus on hyperparameter tuning for each model, increase dataset size and diversity, explore other advanced models, apply deep learning techniques, focus on hyperparameter tuning for each model, increase dataset size and diversity, use other advanced models, apply deep learning techniques",
+    "citations": [
+     33
+    ]
+   }
+  ],
+  "sources": [
+   {
+    "index": 1,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 4,
+    "section": "F. Limitation",
+    "text": "One limitation of this study is that the models were only evaluated based on standard metrics like accuracy, precision, recall, and F1-score. While these metrics provide a comprehensive view of model performance, they do not account for real-time performance or model robustness under different conditions such as noise or varying data distributions. Additionally, the models were not tuned for hyperparameters, which may affect their performance in real-world applications."
+   },
+   {
+    "index": 2,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 1,
+    "section": "II. LITERATURE REVIEW",
+    "text": "Food waste is a significant global problem, and effectively predicting food expiry is a key solution to reduce waste. Recent studies have explored the use of machine learning, particularly deep learning, to predict the freshness and shelf life of food products. \u201dArtificial Intelligence for Shelf-Life Prediction\u201d (2025) by Xie et al. [4] explores AI models that use image data and environmental factors such as temperature and humidity to predict the expiry of food. Convolutional Neural Networks (CNNs) are applied to\u2026"
+   },
+   {
+    "index": 3,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 1,
+    "section": "I. INTRODUCTION",
+    "text": "Food waste is a significant global issue, impacting the environment, economy, and food security. A large portion of edible food is discarded prematurely, particularly in retail, the food supply chain, and households, due to inaccurate spoilage predictions. This issue arises from the lack of real-time monitoring and unreliable expiration forecasting methods, which lead to economic losses and environmental harm, especially in industries dealing with perishable goods like fruits and vegetables. This research seeks to\u2026"
+   },
+   {
+    "index": 4,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 2,
+    "section": "II. LITERATURE REVIEW",
+    "text": "tions, which could be valuable for consumer-facing freshness prediction systems, ensuring privacy while maintaining prediction accuracy. Similarly, \u201dDeep Learning-Based Classification of Rotten Fruits\u201d (2025) by Huang et al. [8] applies CNNs to classify fresh and rotten fruits, highlighting the promise of deep learning in automating spoilage detection and reducing food waste. \u201dPredicting Shelf-Life of Fruits: A Multifactorial Approach\u201d (2025) by Wang et al. [5] combines image-based freshness detection with\u2026"
+   },
+   {
+    "index": 5,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 1,
+    "section": "II. LITERATURE REVIEW",
+    "text": "Similarly, \u201dPredicting Shelf-Life of Fruits\u201d (2024) by Liu et al. Similarly, \u201dPredicting Shelf-Life of Fruits\u201d (2024) by Liu et al. [2] combines CNN for image classification with environmental data like temperature and storage duration to predict fruit freshness. This hybrid approach, leveraging both image and environmental factors, significantly improves accuracy in predicting ripeness and reduces spoilage, especially in retail environments. Further, Zhang et al.\u2019s \u201dFreshness Monitoring in Supply Chains\u201d (2025)\u2026"
+   },
+   {
+    "index": 6,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 1,
+    "section": "II. LITERATURE REVIEW",
+    "text": "\u201dPrivacy-Preserving Ordinal-Meta Learning for Food Freshness\u201d (2025) by Kumar et al. \u201dPrivacy-Preserving Ordinal-Meta Learning for Food Freshness\u201d (2025) by Kumar et al. [7] introduces an innovative privacy-preserving approach using ordinal meta-learning techniques for predicting food freshness. This method categorizes freshness levels for more granular predic- Shahrin Farah Tasnim Dept of Computer Science and Engineering BRAC University Dhaka, Bangladesh shahrin.farah.tasnim@g.bracu.ac.bd"
+   },
+   {
+    "index": 7,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 1,
+    "section": "Abstract",
+    "text": "Abstract\u2014Food waste continues to be a major global issue, with a significant portion of edible food discarded prematurely due to inaccurate spoilage predictions. In industries such as retail, the food supply chain, and households, fruits, vegetables, and packaged goods often go to waste because of poor management and inaccurate expiration forecasts. The lack of real-time monitoring and efficient prediction methods contributes to economic losses and environmental harm. This study aims to tackle this issue by\u2026"
+   },
+   {
+    "index": 8,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 2,
+    "section": "B. Data Preprocessing",
+    "text": "enc\u201d, \u201cdays since purchase\u201d, \u201cstorage temperature (\u00b0C)\u201d, \u201chumidity percentage\u201d, and \u201chandle level (0-100)\u201d as features. Additionally, the dataset is standardized using a standard scaler to ensure that the features have a mean of zero and a standard deviation of one. This improves the performance of machine learning algorithms by making the learning process more efficient."
+   },
+   {
+    "index": 9,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 2,
+    "section": "A. Dataset Description",
+    "text": "The dataset includes 13,599 fruit images (10,901 for training, 2,698 for testing), categorized as apples, bananas, and oranges, and labeled as \u201dfresh\u201d or \u201drotten.\u201d The training set is balanced with 6,161 rotten and 4,740 fresh fruits, and similar distribution is maintained in the test set. Image dimensions range from 144x116 to 860x518 pixels, with an average brightness of 165.88. Additional features include texture scores, storage temperature (5\u00b0C to 30\u00b0C), humidity (40% to 90%), and days since purchase (0 to 12\u2026"
+   },
+   {
+    "index": 10,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 2,
+    "section": "B. Data Preprocessing",
+    "text": "enc\u201d, \u201cdays since purchase\u201d, \u201cstorage temperature (\u00b0C)\u201d, \u201chumidity percentage\u201d, and \u201chandle level (0-100)\u201d as features. Additionally, the dataset is standardized using a standard scaler to ensure that the features have a mean of zero and a standard deviation of one. This improves the performance of machine learning algorithms by making the learning process more efficient."
+   },
+   {
+    "index": 11,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 4,
+    "section": "G. Improvements",
+    "text": "Future improvements can focus on hyperparameter tuning for each model to optimize performance. For instance, applying techniques like grid search or random search for model selection can improve the models\u2019 accuracy. Furthermore, increasing the size and diversity of the dataset or augmenting the current data with more examples could help enhance model robustness and generalization. Additionally, exploring other advanced models, such as deep learning techniques beyond CNNs (e.g., transformers), might provide a\u2026"
+   },
+   {
+    "index": 12,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 2,
+    "section": "B. Data Preprocessing",
+    "text": "In this study, data preprocessing is essential to ensure the dataset is ready for modeling. Initially, label encoding is applied to the \u201cFruit\u201d and \u201cFreshness\u201d columns to transform the categorical variables into numerical values, which are required for machine learning models. The \u201cFruit\u201d column is encoded using a label encoder, and the \u201cFreshness\u201d column is also encoded to create target labels. Fig. 3. Correlation Heatmap (Numeric Features)) The next step involves splitting the dataset into features (X) and the\u2026"
+   },
+   {
+    "index": 13,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 1,
+    "section": "",
+    "text": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata Md Asif Uddin Dept of Computer Science and Engineering BRAC University Dhaka, Bangladesh md.asif.uddin@g.bracu.ac.bd"
+   },
+   {
+    "index": 14,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 2,
+    "section": "C. Models and tools Used",
+    "text": "data set is processed using pandas library, With models being trained and tested using the sklearn and torch libraries. \u2022 a) Convolutional Neural Network (CNN): CNN outperformed all other models, achieving an accuracy of"
+   },
+   {
+    "index": 15,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 4,
+    "section": "F. Limitation",
+    "text": "One limitation of this study is that the models were only evaluated based on standard metrics like accuracy, precision, recall, and F1-score. While these metrics provide a comprehensive view of model performance, they do not account for real-time performance or model robustness under different conditions such as noise or varying data distributions. Additionally, the models were not tuned for hyperparameters, which may affect their performance in real-world applications."
+   },
+   {
+    "index": 16,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 3,
+    "section": "A. Performance Metrics",
+    "text": "In this section, we will discuss the results of our models and the challenges encountered during the project. The performance comparison of five machine learning models\u2014CNN, SVM, Gradient Boosting, MLP, and Random Forest\u2014reveals that CNN outperforms all other models in terms of accuracy, achieving 96%. CNN leads in precision, recall, and F1-score for both the \u201cfresh\u201d and \u201crotten\u201d classes, highlighting its superior ability to classify both classes correctly. Random Forest shows competitive performance with an\u2026"
+   },
+   {
+    "index": 17,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 4,
+    "section": "E. Discussion",
+    "text": "The CNN model\u2019s success can be attributed to its deep architecture, which allows it to capture spatial features from images effectively, resulting in high precision and recall. The Random Forest and Gradient Boosting models, being ensemble methods, also show strong performance, especially in terms of precision for the \u201drotten\u201d class. However, their recall for the \u201dfresh\u201d class is slightly lower. MLP, despite being a fully connected network, struggles with capturing complex patterns as effectively as CNN, leading\u2026"
+   },
+   {
+    "index": 18,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 2,
+    "section": "C. Models and tools Used",
+    "text": "precision recall and F1 score matrices, as well as through evaluations such as ROC curves and confusion matrices. precision recall and F1 score matrices, as well as through evaluations such as ROC curves and confusion matrices. The models are implemented using Python in the following libraries: scikit-learn for preprocessing, model training and evolution, pandas for data manipulation, matplotlib and Seabourn for visualization and thoughts for deep learning models. The primary tools used include LevelEncoder for\u2026"
+   },
+   {
+    "index": 19,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 2,
+    "section": "C. Models and tools Used",
+    "text": "The study applies multiple machine learning algorithms to classify fresh fruitness with Random Forest multilayer, Perceptron MLP, and convolutional neural network CNN Bing the primary models. The Random Forest model is used due to its ability to handle large data sets and its robustness against overfitting. The MLP is implemented using a pipeline for scalable processing and CNN is applied for image classification. Each model is evaluated using accuracy, precision recall and F1 score matrices, as well as through\u2026"
+   },
+   {
+    "index": 20,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 4,
+    "section": "D. Analysis",
+    "text": "SVM show relatively lower accuracy compared to CNN, with MLP achieving an accuracy of 78% and SVM at 80%. The AUC values show that CNN has the highest AUC at 0.995, indicating the model\u2019s strong ability to distinguish between the classes. Fig. 6. Metrics By Class"
+   },
+   {
+    "index": 21,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 2,
+    "section": "II. LITERATURE REVIEW",
+    "text": "high computational costs, this approach offers significant potential for practical use in retail to limit food waste. high computational costs, this approach offers significant potential for practical use in retail to limit food waste. Li et al.\u2019s \u201dIntelligent Monitoring of Fruit and Vegetable Freshness in Supply Chains\u201d (2025) focuses on realtime freshness monitoring by combining image analysis with supply chain metadata, enabling continuous freshness evaluation to maintain food quality and minimize waste. Zhao\u2026"
+   },
+   {
+    "index": 22,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 2,
+    "section": "II. LITERATURE REVIEW",
+    "text": "Lastly, \u201dCanned Apple Freshness Detection Using Hybrid Approach\u201d (2025) by Guo et al. Lastly, \u201dCanned Apple Freshness Detection Using Hybrid Approach\u201d (2025) by Guo et al. [1] proposes using CNNs to extract features from canned apples, followed by machine learning algorithms for classification. Despite challenges with processing time, this model demonstrates the potential of image recognition and machine learning in evaluating food freshness, particularly in the canned goods industry where waste reduction is\u2026"
+   },
+   {
+    "index": 23,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 3,
+    "section": "D. Analysis",
+    "text": "The performance analysis of the five models\u2014CNN, Random Forest, MLP, Gradient Boosting, and SVM\u2014reveals distinct differences in their ability to classify fresh and rotten fruits. CNN achieves the highest accuracy at 96%, outperformance in precision, recall, and F1-score across both classes. Random Forest and Gradient Boosting also perform competitively, with Random Forest achieving an accuracy of 81%, and Gradient Boosting following closely. MLP and"
+   },
+   {
+    "index": 24,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 4,
+    "section": "F. Limitation",
+    "text": "One limitation of this study is that the models were only evaluated based on standard metrics like accuracy, precision, recall, and F1-score. While these metrics provide a comprehensive view of model performance, they do not account for real-time performance or model robustness under different conditions such as noise or varying data distributions. Additionally, the models were not tuned for hyperparameters, which may affect their performance in real-world applications."
+   },
+   {
+    "index": 25,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 3,
+    "section": "A. Performance Metrics",
+    "text": "In this section, we will discuss the results of our models and the challenges encountered during the project. The performance comparison of five machine learning models\u2014CNN, SVM, Gradient Boosting, MLP, and Random Forest\u2014reveals that CNN outperforms all other models in terms of accuracy, achieving 96%. CNN leads in precision, recall, and F1-score for both the \u201cfresh\u201d and \u201crotten\u201d classes, highlighting its superior ability to classify both classes correctly. Random Forest shows competitive performance with an\u2026"
+   },
+   {
+    "index": 26,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 3,
+    "section": "A. Performance Metrics",
+    "text": "Here is the summary table of the performance metrics for all five models: Metric CNN SVM GB MLP RF Accuracy 96.4% 79.9% 81.1% 78.0% 81.0% Precision (Fresh) 97% 89.1% 96.5% 75% 70% Precision (Rotten) 95% 74% 70% 80% 99% Precision (Avg.) 96% 89% 97% 78% 85% Recall (Fresh) 93% 74% 69% 73% 99% Recall (Rotten) 98% 89% 97% 82% 68% Recall (Avg.) 96% 74% 69% 77% 84% F1-score (Fresh) 95% 81% 81% 74% 82% F1-score (Rotten) 96% 81% 81% 81% 81% F1-score (Avg.) 96% 81% 81% 78% 81% AUC (ROC) 0.995 0.897 0.915 0.903 0.914 AP\u2026"
+   },
+   {
+    "index": 27,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 3,
+    "section": "A. Performance Metrics",
+    "text": "SVM, though slightly behind, performs well, particularly in precision for the \u201cfresh\u201d class. SVM, though slightly behind, performs well, particularly in precision for the \u201cfresh\u201d class. The ROC AUC scores indicate that CNN and Gradient Boosting are the strongest performers, with CNN achieving an outstanding AUC of 0.995. The precision-recall curves further emphasize CNN\u2019s edge, showing the highest Average Precision (AP) of 0.994. These results suggest that CNN is the most effective model for this classification\u2026"
+   },
+   {
+    "index": 28,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 4,
+    "section": "F. Limitation",
+    "text": "One limitation of this study is that the models were only evaluated based on standard metrics like accuracy, precision, recall, and F1-score. While these metrics provide a comprehensive view of model performance, they do not account for real-time performance or model robustness under different conditions such as noise or varying data distributions. Additionally, the models were not tuned for hyperparameters, which may affect their performance in real-world applications."
+   },
+   {
+    "index": 29,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 4,
+    "section": "D. Analysis",
+    "text": "SVM show relatively lower accuracy compared to CNN, with MLP achieving an accuracy of 78% and SVM at 80%. The AUC values show that CNN has the highest AUC at 0.995, indicating the model\u2019s strong ability to distinguish between the classes. Fig. 6. Metrics By Class"
+   },
+   {
+    "index": 30,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 3,
+    "section": "D. Analysis",
+    "text": "The performance analysis of the five models\u2014CNN, Random Forest, MLP, Gradient Boosting, and SVM\u2014reveals distinct differences in their ability to classify fresh and rotten fruits. CNN achieves the highest accuracy at 96%, outperformance in precision, recall, and F1-score across both classes. Random Forest and Gradient Boosting also perform competitively, with Random Forest achieving an accuracy of 81%, and Gradient Boosting following closely. MLP and"
+   },
+   {
+    "index": 31,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 3,
+    "section": "C. Models and tools Used",
+    "text": "96%. CNN led in precision, recall, and F1-score for both the \u201cfresh\u201d and \u201crotten\u201d classes, showcasing its exceptional ability to classify both classes correctly. CNN\u2019s performance was also reflected in its AUC of 0.995 and Average Precision of 0.994, indicating its superior ability to distinguish between classes and accurately predict freshness. \u2022 b) Support Vector Machine (SVM ): SVM performed well, especially in precision for the \u201dfresh\u201d class, achieving an accuracy of 0.799. Although it did not surpass CNN, it\u2026"
+   },
+   {
+    "index": 32,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 4,
+    "section": "H. Conclusion",
+    "text": "This study evaluated the performance of Gradient Boosting Classifier (GBC), Support Vector Machine (SVM), and Convolutional Neural Networks (CNN) for classifying fruit freshness as \u201cfresh\u201d or \u201crotten\u201d. The GBC model showed 81.1% accuracy, with high precision for \u201cFresh\u201d (96.5%) and solid recall (69.3%). The SVM model performed well with 79.9% accuracy but did not outperform GBC or CNN. CNN excelled with the highest accuracy (96.4%) and superior ability to classify both \u201cFresh\u201d and \u201cRotten\u201d fruits, as demonstrated\u2026"
+   },
+   {
+    "index": 33,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 4,
+    "section": "H. Conclusion",
+    "text": "superior ability to classify both \u201cFresh\u201d and \u201cRotten\u201d fruits, as demonstrated by the confusion matrix and ROC curves. Despite the strong results, there are areas for improvement. Models like Random Forest may suffer from overfitting, and CNNs require significant computational resources. Future work could focus on addressing class imbalances, using techniques like SMOTE, hyperparameter tuning, and integrating environmental features (e.g., temperature and humidity). Exploring advanced CNN architectures and\u2026"
+   },
+   {
+    "index": 34,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 4,
+    "section": "G. Improvements",
+    "text": "Future improvements can focus on hyperparameter tuning for each model to optimize performance. For instance, applying techniques like grid search or random search for model selection can improve the models\u2019 accuracy. Furthermore, increasing the size and diversity of the dataset or augmenting the current data with more examples could help enhance model robustness and generalization. Additionally, exploring other advanced models, such as deep learning techniques beyond CNNs (e.g., transformers), might provide a\u2026"
+   },
+   {
+    "index": 35,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 1,
+    "section": "II. LITERATURE REVIEW",
+    "text": "Similarly, \u201dPredicting Shelf-Life of Fruits\u201d (2024) by Liu et al. Similarly, \u201dPredicting Shelf-Life of Fruits\u201d (2024) by Liu et al. [2] combines CNN for image classification with environmental data like temperature and storage duration to predict fruit freshness. This hybrid approach, leveraging both image and environmental factors, significantly improves accuracy in predicting ripeness and reduces spoilage, especially in retail environments. Further, Zhang et al.\u2019s \u201dFreshness Monitoring in Supply Chains\u201d (2025)\u2026"
+   },
+   {
+    "index": 36,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 1,
+    "section": "II. LITERATURE REVIEW",
+    "text": "Food waste is a significant global problem, and effectively predicting food expiry is a key solution to reduce waste. Recent studies have explored the use of machine learning, particularly deep learning, to predict the freshness and shelf life of food products. \u201dArtificial Intelligence for Shelf-Life Prediction\u201d (2025) by Xie et al. [4] explores AI models that use image data and environmental factors such as temperature and humidity to predict the expiry of food. Convolutional Neural Networks (CNNs) are applied to\u2026"
+   },
+   {
+    "index": 37,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 2,
+    "section": "II. LITERATURE REVIEW",
+    "text": "tions, which could be valuable for consumer-facing freshness prediction systems, ensuring privacy while maintaining prediction accuracy. Similarly, \u201dDeep Learning-Based Classification of Rotten Fruits\u201d (2025) by Huang et al. [8] applies CNNs to classify fresh and rotten fruits, highlighting the promise of deep learning in automating spoilage detection and reducing food waste. \u201dPredicting Shelf-Life of Fruits: A Multifactorial Approach\u201d (2025) by Wang et al. [5] combines image-based freshness detection with\u2026"
+   },
+   {
+    "index": 38,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 2,
+    "section": "II. LITERATURE REVIEW",
+    "text": "high computational costs, this approach offers significant potential for practical use in retail to limit food waste. high computational costs, this approach offers significant potential for practical use in retail to limit food waste. Li et al.\u2019s \u201dIntelligent Monitoring of Fruit and Vegetable Freshness in Supply Chains\u201d (2025) focuses on realtime freshness monitoring by combining image analysis with supply chain metadata, enabling continuous freshness evaluation to maintain food quality and minimize waste. Zhao\u2026"
+   },
+   {
+    "index": 39,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 4,
+    "section": "E. Discussion",
+    "text": "The CNN model\u2019s success can be attributed to its deep architecture, which allows it to capture spatial features from images effectively, resulting in high precision and recall. The Random Forest and Gradient Boosting models, being ensemble methods, also show strong performance, especially in terms of precision for the \u201drotten\u201d class. However, their recall for the \u201dfresh\u201d class is slightly lower. MLP, despite being a fully connected network, struggles with capturing complex patterns as effectively as CNN, leading\u2026"
+   },
+   {
+    "index": 40,
+    "document_id": "ff35925f71fc7f5a",
+    "title": "Towards Reducing Food Waste: A High-Accuracy Hybrid Model for Fruit Freshness Prediction via CNN and Metadata",
+    "page": 1,
+    "section": "Abstract",
+    "text": "Abstract\u2014Food waste continues to be a major global issue, with a significant portion of edible food discarded prematurely due to inaccurate spoilage predictions. In industries such as retail, the food supply chain, and households, fruits, vegetables, and packaged goods often go to waste because of poor management and inaccurate expiration forecasts. The lack of real-time monitoring and efficient prediction methods contributes to economic losses and environmental harm. This study aims to tackle this issue by\u2026"
+   }
+  ]
+ },
+ "summary": {
+  "title": "Retinal Fundus Multi-Disease Image Classification using Hybrid CNN-Transformer-Ensemble Architectures",
+  "fields": [
+   {
+    "name": "research_problem",
+    "label": "Research problem",
+    "value": "Our research addresses the urgent global issue of a large population affected by retinal diseases, which are unevenly distributed and underserved by specialized medical expertise, particularly in non-urban areas. The primary objective is to bridge this healthcare gap by developing a comprehensive diagnostic system capable of accurately predicting retinal diseases from fundus images.",
+    "citations": [
+     1
+    ]
+   },
+   {
+    "name": "contribution",
+    "label": "Main contribution",
+    "value": "Our work introduces six novel models that combine deeper CNN backbones, transformer encoders, and ensemble architectures. These models outperform baseline models, achieving a remarkable model score of 0.9166, surpassing the baseline score of 0.9. We also highlight the importance of domain knowledge in identifying relevant image regions and the use of the IEViT concept to improve transformer-based learning.",
+    "citations": [
+     4,
+     7
+    ]
+   },
+   {
+    "name": "data",
+    "label": "Data",
+    "value": "The paper chose the MuReD dataset for its relevance and utilization in the C- Tran paper, which was aimed at establishing baselines for the model. Future analysis will incorporate the RFMiD 2.0 and JSIEC datasets, which are the latest and encompass all essential labels of MuReD.",
+    "citations": [
+     9
+    ]
+   },
+   {
+    "name": "methodology",
+    "label": "Methodology",
+    "value": "The authors applied various augmentation techniques to the dataset, including Random Horizontal Flip, to increase the diversity and variability of the training dataset. They also used Weighted Random Sampling and LP-ROS (10%) to address class imbalance, and utilized DenseNet121 and DenseNet201 as backbone models with ResNet152d for feature extraction. The IEViT concept was incorporated into the IeECT model to retain knowledge of the original image while maintaining fewer parameters.",
+    "citations": [
+     10,
+     15
+    ]
+   },
+   {
+    "name": "experimental_setup",
+    "label": "Experimental setup",
+    "value": "The study utilized the MuReD dataset, which is a refined variant of the highly imbalanced RFMiD dataset. The authors explored various deep CNN architectures as backbone models, including ResNet152d, DenseNet121, DenseNet201, and EfficientNetV2Small, and used these models as feature extractors. They also applied augmentation techniques and addressed class imbalance using Weighted Random Sampling and LP-ROS (10%). The IEViT concept was used in the IeECT model to ensure the model retained knowledge of the original image while maintaining fewer parameters.",
+    "citations": [
+     9,
+     13,
+     11
+    ]
+   },
+   {
+    "name": "results",
+    "label": "Results",
+    "value": "The results demonstrated that the proposed hybrid models, including the ensemble models with deeper CNN backbones and the ensemble variant 2 with a single transformer layer, outperformed the baseline models. Specifically, the ensemble variant 1 achieved a model score above 0.91, surpassing the baseline in 5 out of 8 metrics. The ROC curve for the Ensemble model is shown in Fig. 3, and the comparative performance is detailed in Table 6, which indicates that the proposed models outperformed the state-of-the-art model with a score of 0.9. Additionally, the IEViT v2 DPD variant showed superior performance compared to the C-Tran baseline model while maintaining lower computational complexity.",
+    "citations": [
+     20,
+     23,
+     19
+    ]
+   },
+   {
+    "name": "limitations",
+    "label": "Limitations",
+    "value": "The constraints imposed by data size and class imbalances could lead to randomness and potential overfitting, as highlighted in the paper. These challenges necessitate further refinement, particularly in improving model interpretability to enhance practical utility.",
+    "citations": [
+     17
+    ]
+   },
+   {
+    "name": "future_work",
+    "label": "Future work",
+    "value": "Future work will focus on exploring the integration of Shapley values to make the model predictions more transparent and understandable. Additionally, the research aims to incorporate the RFMiD 2.0 and JSIEC datasets for a more comprehensive analysis, and the integration of Shapley values to make the model predictions more transparent and understandable.",
+    "citations": [
+     17
+    ]
+   }
+  ],
+  "sources": [
+   {
+    "index": 1,
+    "document_id": "d9e774fdbd4cb47e",
+    "title": "Retinal Fundus Multi-Disease Image Classification using Hybrid CNN-Transformer-Ensemble Architectures",
+    "page": 1,
+    "section": "Abstract",
+    "text": "Abstract. Our research is motivated by the urgent global issue of a large population affected by retinal diseases, which are evenly distributed but underserved by specialized medical expertise, particularly in non-urban areas. Our primary objective is to bridge this healthcare gap by developing a comprehensive diagnostic system capable of accurately predicting retinal diseases solely from fundus images. However, we faced significant challenges due to limited, diverse datasets and imbalanced class distributions. To\u2026"
+   },
+   {
+    "index": 2,
+    "document_id": "d9e774fdbd4cb47e",
+    "title": "Retinal Fundus Multi-Disease Image Classification using Hybrid CNN-Transformer-Ensemble Architectures",
+    "page": 1,
+    "section": "Keywords",
+    "text": "Keywords: Retinal disease classification, CNN, Classification Transformers, IEViT, Ensemble, Hybrid \u22c6The first two authors contributed equally to this work and should be regarded as Joint First Authors"
+   },
+   {
+    "index": 3,
+    "document_id": "d9e774fdbd4cb47e",
+    "title": "Retinal Fundus Multi-Disease Image Classification using Hybrid CNN-Transformer-Ensemble Architectures",
+    "page": 1,
+    "section": "",
+    "text": "Retinal Fundus Multi-Disease Image Classification using Hybrid CNN-Transformer-Ensemble Architectures 1School of Physical Science, 2School of Biological Science, 3School of Computer Science, National Institute of Science Education and Research, Bhubaneswar, India {1deependra.singh, 2saksham.agarwal, 3smishra}@niser.ac.in $ Corresponding author: Subhankar Mishra, smishra@niser.ac.in"
+   },
+   {
+    "index": 4,
+    "document_id": "d9e774fdbd4cb47e",
+    "title": "Retinal Fundus Multi-Disease Image Classification using Hybrid CNN-Transformer-Ensemble Architectures",
+    "page": 3,
+    "section": "1.1 Contribution",
+    "text": "Our work has the following contribution to current research: 1. We developed six novel models that combine deeper CNN backbones, transformer encoders, and ensemble architectures. 2. All six variants were tested on the dataset, showing improved performances over the baseline models. 3. Utilisation of the domain knowledge to highlight more relevant image regions with importance patch extraction. 4. Improvement in the general transformer-based learning using the IE concept. 5. For the purpose of reproducibility, the\u2026"
+   },
+   {
+    "index": 5,
+    "document_id": "d9e774fdbd4cb47e",
+    "title": "Retinal Fundus Multi-Disease Image Classification using Hybrid CNN-Transformer-Ensemble Architectures",
+    "page": 15,
+    "section": "7 Conclusion",
+    "text": "the constraints imposed by data size and class imbalances, which could lead to randomness and potential overfitting. Despite these challenges, our work represents a significant step in advancing deep learning-based strategies for accurate retinal disease classification. It also opens avenues for further refinement. We plan to focus on improving model interpretability to address these limitations and enhance practical utility. In our future work, we aim to explore the integration of Shapley values to unravel the\u2026"
+   },
+   {
+    "index": 6,
+    "document_id": "d9e774fdbd4cb47e",
+    "title": "Retinal Fundus Multi-Disease Image Classification using Hybrid CNN-Transformer-Ensemble Architectures",
+    "page": 5,
+    "section": "4 Models",
+    "text": "This section provides an overview of the models used in our study and highlights their unique contributions and variations."
+   },
+   {
+    "index": 7,
+    "document_id": "d9e774fdbd4cb47e",
+    "title": "Retinal Fundus Multi-Disease Image Classification using Hybrid CNN-Transformer-Ensemble Architectures",
+    "page": 1,
+    "section": "Abstract",
+    "text": "To overcome these issues, we have devised innovative strategies. To overcome these issues, we have devised innovative strategies. Our research introduces novel approaches, utilizing hybrid models combining deeper Convolutional Neural Networks (CNNs), Transformer encoders, and ensemble architectures sequentially and in parallel to classify retinal fundus images into 20 disease labels. Our overarching goal is to assess these advanced models\u2019 potential in practical applications, with a strong focus on enhancing\u2026"
+   },
+   {
+    "index": 8,
+    "document_id": "d9e774fdbd4cb47e",
+    "title": "Retinal Fundus Multi-Disease Image Classification using Hybrid CNN-Transformer-Ensemble Architectures",
+    "page": 12,
+    "section": "4.5 CTran Variants with IEViT Concept",
+    "text": "\u02c6l = [zl, y] By employing this design, the IeECT model benefits from the expressive power of DenseNet201, which captures intricate image details and relationships. Simultaneously, the inclusion of the ResNet152 feature embedding allows the model to incorporate information from a different architectural perspective, enriching the representations with complementary insights. Using the IEViT concept in IeECT ensures that the model retains knowledge of the original image throughout the encoding process while\u2026"
+   },
+   {
+    "index": 9,
+    "document_id": "d9e774fdbd4cb47e",
+    "title": "Retinal Fundus Multi-Disease Image Classification using Hybrid CNN-Transformer-Ensemble Architectures",
+    "page": 3,
+    "section": "2 Dataset",
+    "text": "Among the three publicly available datasets shown in the table below, we chose the MuReD dataset [17]. This decision was influenced by its utilization in the C- Tran paper we aimed to reproduce for establishing baselines of our model [15]. MuReD, a refined variant of the highly imbalanced RFMiD dataset, was preferred due to its relevance. In the future, we intend to incorporate the RFMiD 2.0 and JSIEC datasets in our analysis as it is the latest dataset out of three and encompasses all the essential labels of\u2026"
+   },
+   {
+    "index": 10,
+    "document_id": "d9e774fdbd4cb47e",
+    "title": "Retinal Fundus Multi-Disease Image Classification using Hybrid CNN-Transformer-Ensemble Architectures",
+    "page": 5,
+    "section": "3.2 Augmentation",
+    "text": "In the context of image data preprocessing, augmentation techniques are commonly used to increase the diversity and variability of the training dataset. These techniques introduce modifications or transformations to the original images, allowing the model to learn from a wider range of data patterns. These augmentation techniques are applied as part of the data transformation pipeline using the torchvision.transforms module. They contribute to enhancing the model\u2019s robustness and ability to generalize patterns\u2026"
+   },
+   {
+    "index": 11,
+    "document_id": "d9e774fdbd4cb47e",
+    "title": "Retinal Fundus Multi-Disease Image Classification using Hybrid CNN-Transformer-Ensemble Architectures",
+    "page": 4,
+    "section": "3.1 Sampling Techniques",
+    "text": "Technique Description Weighted Random Sampling Addresses class imbalance by assigning higher weights to under- represented classes during training. LP-ROS (10%) An oversampling technique based on the Label Powerset transformation, used to handle class imbalance. Here, the minority class samples are augmented by adding 10% more samples to balance the class distribution."
+   },
+   {
+    "index": 12,
+    "document_id": "d9e774fdbd4cb47e",
+    "title": "Retinal Fundus Multi-Disease Image Classification using Hybrid CNN-Transformer-Ensemble Architectures",
+    "page": 3,
+    "section": "1.1 Contribution",
+    "text": "To build our hybrid models combining CNN and transformers, we selected two baseline models from previous works: C-Tran [15], which was previously been tested on a fundus image dataset with 20 labels, and IEViT [16], which was previously been tried on chest X-ray images. Our work has the following contribution to current research:"
+   },
+   {
+    "index": 13,
+    "document_id": "d9e774fdbd4cb47e",
+    "title": "Retinal Fundus Multi-Disease Image Classification using Hybrid CNN-Transformer-Ensemble Architectures",
+    "page": 5,
+    "section": "4.1 Deep Convolutional Neural Networks",
+    "text": "We explored various deep CNN architectures as backbone models to identify the most effective model configuration. Our selection encompassed ResNet152d, DenseNet121, DenseNet201, and EfficientNetV2Small. These models were pretrained on ImageNet and served as feature extractors, generating feature embeddings that were subsequently processed through transformer layers for classification. By evaluating different CNN architectures, we sought to capitalize on their unique feature extraction capabilities. Additionally,\u2026"
+   },
+   {
+    "index": 14,
+    "document_id": "d9e774fdbd4cb47e",
+    "title": "Retinal Fundus Multi-Disease Image Classification using Hybrid CNN-Transformer-Ensemble Architectures",
+    "page": 3,
+    "section": "1.1 Contribution",
+    "text": "Our work has the following contribution to current research: 1. We developed six novel models that combine deeper CNN backbones, transformer encoders, and ensemble architectures. 2. All six variants were tested on the dataset, showing improved performances over the baseline models. 3. Utilisation of the domain knowledge to highlight more relevant image regions with importance patch extraction. 4. Improvement in the general transformer-based learning using the IE concept. 5. For the purpose of reproducibility, the\u2026"
+   },
+   {
+    "index": 15,
+    "document_id": "d9e774fdbd4cb47e",
+    "title": "Retinal Fundus Multi-Disease Image Classification using Hybrid CNN-Transformer-Ensemble Architectures",
+    "page": 12,
+    "section": "4.5 CTran Variants with IEViT Concept",
+    "text": "\u02c6l = [zl, y] By employing this design, the IeECT model benefits from the expressive power of DenseNet201, which captures intricate image details and relationships. Simultaneously, the inclusion of the ResNet152 feature embedding allows the model to incorporate information from a different architectural perspective, enriching the representations with complementary insights. Using the IEViT concept in IeECT ensures that the model retains knowledge of the original image throughout the encoding process while\u2026"
+   },
+   {
+    "index": 16,
+    "document_id": "d9e774fdbd4cb47e",
+    "title": "Retinal Fundus Multi-Disease Image Classification using Hybrid CNN-Transformer-Ensemble Architectures",
+    "page": 14,
+    "section": "6 Results and Discussion",
+    "text": "of C-Tran also exhibited slight improvements over the baseline, showcasing that the IE concept can be advantageous even in generic transformer architectures while maintaining lower complexity. Fig. 3. ROC curve for Ensemble model Table 6. Comparative performance of the proposed hybrid models with the state-ofthe-art (SOTA) model Model ML mAP ML F1 ML AUC ML Score Model Score SOTA 0.573 0.685 0.962 0.824 0.9 [10] Proposed Models C-Tran DenseNet201 0.6909 0.6394 0.9221 0.8065 0.9032a"
+   },
+   {
+    "index": 17,
+    "document_id": "d9e774fdbd4cb47e",
+    "title": "Retinal Fundus Multi-Disease Image Classification using Hybrid CNN-Transformer-Ensemble Architectures",
+    "page": 15,
+    "section": "7 Conclusion",
+    "text": "the constraints imposed by data size and class imbalances, which could lead to randomness and potential overfitting. Despite these challenges, our work represents a significant step in advancing deep learning-based strategies for accurate retinal disease classification. It also opens avenues for further refinement. We plan to focus on improving model interpretability to address these limitations and enhance practical utility. In our future work, we aim to explore the integration of Shapley values to unravel the\u2026"
+   },
+   {
+    "index": 18,
+    "document_id": "d9e774fdbd4cb47e",
+    "title": "Retinal Fundus Multi-Disease Image Classification using Hybrid CNN-Transformer-Ensemble Architectures",
+    "page": 3,
+    "section": "1 Introduction",
+    "text": "These works showcase deep learning\u2019s impact, though dataset limitations and lower accuracy on certain labels warrant attention. Our research seeks to pioneer a hybrid model that addresses these challenges, providing a scalable solution for comprehensive retinal disease diagnosis.\u201d"
+   },
+   {
+    "index": 19,
+    "document_id": "d9e774fdbd4cb47e",
+    "title": "Retinal Fundus Multi-Disease Image Classification using Hybrid CNN-Transformer-Ensemble Architectures",
+    "page": 13,
+    "section": "6 Results and Discussion",
+    "text": "showed superior performance compared to the C-Tran baseline model while maintaining lower computational complexity. showed superior performance compared to the C-Tran baseline model while maintaining lower computational complexity. Notably, the IEViT v2 DPD variant displayed slightly better performance among the IEViT models for 32 \u00d7 32 dimension patch. The IE variants"
+   },
+   {
+    "index": 20,
+    "document_id": "d9e774fdbd4cb47e",
+    "title": "Retinal Fundus Multi-Disease Image Classification using Hybrid CNN-Transformer-Ensemble Architectures",
+    "page": 13,
+    "section": "6 Results and Discussion",
+    "text": "Model Score = ML Score + Bin AUC The results of our experiments are presented in Table 6. As expected, the deeper DenseNet201 model surpassed the baseline C-Tran model that used DenseNet161. The ensemble models with deeper CNN backbones also demonstrated improved scores. The Strong Densenet and Weak Resnet ensemble variant 1, in particular, consistently achieved a model score above 0.91, surpassing the rest. It surpassed the baseline in 5 out of 8 metrics, scoring AUC less than 0.9 only in 1 label compared to 2 of\u2026"
+   },
+   {
+    "index": 21,
+    "document_id": "d9e774fdbd4cb47e",
+    "title": "Retinal Fundus Multi-Disease Image Classification using Hybrid CNN-Transformer-Ensemble Architectures",
+    "page": 3,
+    "section": "1.1 Contribution",
+    "text": "Our work has the following contribution to current research: 1. We developed six novel models that combine deeper CNN backbones, transformer encoders, and ensemble architectures. 2. All six variants were tested on the dataset, showing improved performances over the baseline models. 3. Utilisation of the domain knowledge to highlight more relevant image regions with importance patch extraction. 4. Improvement in the general transformer-based learning using the IE concept. 5. For the purpose of reproducibility, the\u2026"
+   },
+   {
+    "index": 22,
+    "document_id": "d9e774fdbd4cb47e",
+    "title": "Retinal Fundus Multi-Disease Image Classification using Hybrid CNN-Transformer-Ensemble Architectures",
+    "page": 7,
+    "section": "4.3 Ensemble Model",
+    "text": "Additionally, evaluation metrics are computed using the sigmoid-activated predictions to assess model performance. Variant 2: Single Transformer Layer: In this variant, the input image is passed through both the DenseNet201 and ResNet152D backbone models. The feature embeddings from both backbones are then combined and fed into a single transformer layer. The output embeddings from both backbone models, denoted as Xdn and Xrn, are concatenated along the n dimension (dimension 0), creating a unified feature\u2026"
+   },
+   {
+    "index": 23,
+    "document_id": "d9e774fdbd4cb47e",
+    "title": "Retinal Fundus Multi-Disease Image Classification using Hybrid CNN-Transformer-Ensemble Architectures",
+    "page": 14,
+    "section": "6 Results and Discussion",
+    "text": "of C-Tran also exhibited slight improvements over the baseline, showcasing that the IE concept can be advantageous even in generic transformer architectures while maintaining lower complexity. Fig. 3. ROC curve for Ensemble model Table 6. Comparative performance of the proposed hybrid models with the state-ofthe-art (SOTA) model Model ML mAP ML F1 ML AUC ML Score Model Score SOTA 0.573 0.685 0.962 0.824 0.9 [10] Proposed Models C-Tran DenseNet201 0.6909 0.6394 0.9221 0.8065 0.9032a"
+   },
+   {
+    "index": 24,
+    "document_id": "d9e774fdbd4cb47e",
+    "title": "Retinal Fundus Multi-Disease Image Classification using Hybrid CNN-Transformer-Ensemble Architectures",
+    "page": 3,
+    "section": "2 Dataset",
+    "text": "Among the three publicly available datasets shown in the table below, we chose the MuReD dataset [17]. This decision was influenced by its utilization in the C- Tran paper we aimed to reproduce for establishing baselines of our model [15]. MuReD, a refined variant of the highly imbalanced RFMiD dataset, was preferred due to its relevance. In the future, we intend to incorporate the RFMiD 2.0 and JSIEC datasets in our analysis as it is the latest dataset out of three and encompasses all the essential labels of\u2026"
+   }
+  ]
+ }
+}

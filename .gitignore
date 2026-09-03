@@ -19,3 +19,8 @@ data/*
 
 # OS
 .DS_Store
+
+# The papers the recorded demo was made from. Third-party PDFs, not ours to
+# redistribute — docs/data/sessions.json carries only the short passages the
+# answers actually cite, with their page and section.
+demo-library/
