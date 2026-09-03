@@ -12,5 +12,8 @@ export default defineConfig({
       '/api': { target: 'http://127.0.0.1:8000', changeOrigin: true },
     },
   },
+  /* Project pages serve from /LocalScholar/, a local build from /. Relative
+     asset URLs work in both, so the same build is not tied to either. */
+  base: './',
   build: { outDir: 'dist' },
 })
